@@ -1,0 +1,7 @@
+domain: gke.io
+repo: cloudsolutionsarchitects/fqdnnetworkpolicies
+resources:
+- group: networking
+  kind: FQDNNetworkPolicy
+  version: v1alpha1
+version: "2"
