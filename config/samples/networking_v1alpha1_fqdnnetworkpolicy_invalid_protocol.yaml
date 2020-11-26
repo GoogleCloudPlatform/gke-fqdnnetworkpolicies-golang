@@ -1,7 +1,7 @@
 apiVersion: networking.gke.io/v1alpha1
 kind: FQDNNetworkPolicy
 metadata:
-  name: fqdnnetworkpolicy-sample
+  name: fqdnnetworkpolicy-invalid-protocol
 spec:
   podSelector: {}
   egress:
@@ -10,5 +10,5 @@ spec:
         - github.com
         - gitlab.com
       ports:
-        - port: 443
-          protocol: TCP
+      - port: 443
+        protocol: ICMP

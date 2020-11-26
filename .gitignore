@@ -22,3 +22,6 @@ bin
 *.swp
 *.swo
 *~
+
+# Personal environment variables
+my.env

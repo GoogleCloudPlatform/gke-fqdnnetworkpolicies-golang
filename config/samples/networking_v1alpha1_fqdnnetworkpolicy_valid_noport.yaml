@@ -1,0 +1,13 @@
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: fqdnnetworkpolicy-valid-noport
+spec:
+  podSelector: {}
+  egress:
+    - to:
+      - fqdns:
+        - github.com
+        - gitlab.com
+      ports:
+      - protocol: TCP

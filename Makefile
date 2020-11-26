@@ -1,8 +1,9 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= controller:$(shell git describe --always --dirty)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
+SKIP_TEST ?= false
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -15,7 +16,7 @@ all: manager
 
 # Run tests
 test: generate fmt vet manifests
-	go test ./... -coverprofile cover.out
+	[ $(SKIP_TEST) == "true" ] || go test ./... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
@@ -37,6 +38,9 @@ uninstall: manifests
 deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
+
+force-deploy-manager: docker-build kind-load-image deploy
+	kubectl -n fqdnnetworkpolicies-system delete pod -l control-plane=controller-manager
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
@@ -78,3 +82,15 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+kind-cluster:
+	kind create cluster --name fqdn-tests
+
+kind-load-image:
+	kind load docker-image ${IMG} --name fqdn-tests
+
+deploy-cert-manager:
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.yaml
+
+follow-manager-logs:
+	kubectl -n fqdnnetworkpolicies-system logs -l control-plane=controller-manager -c manager -f

@@ -1,0 +1,14 @@
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: fqdnnetworkpolicy-invalid-port
+spec:
+  podSelector: {}
+  egress:
+    - to:
+      - fqdns:
+        - github.com
+        - gitlab.com
+      ports:
+      - port: 66443
+        protocol: TCP

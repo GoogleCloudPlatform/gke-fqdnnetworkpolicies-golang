@@ -1,0 +1,52 @@
+
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-networking-gke-io-v1alpha1-fqdnnetworkpolicy
+  failurePolicy: Fail
+  name: mfqdnnetworkpolicy.kb.io
+  rules:
+  - apiGroups:
+    - networking.gke.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - fqdnnetworkpolicies
+
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-networking-gke-io-v1alpha1-fqdnnetworkpolicy
+  failurePolicy: Fail
+  name: vfqdnnetworkpolicy.kb.io
+  rules:
+  - apiGroups:
+    - networking.gke.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - fqdnnetworkpolicies

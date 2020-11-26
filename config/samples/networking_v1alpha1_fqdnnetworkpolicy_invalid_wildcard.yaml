@@ -1,0 +1,15 @@
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: fqdnnetworkpolicy-invalid-wildcard
+spec:
+  podSelector: {}
+  egress:
+    - to:
+      - fqdns:
+        - github.com
+        - gitlab.com
+        - '*.example.com'
+      ports:
+      - port: 443
+        protocol: TCP

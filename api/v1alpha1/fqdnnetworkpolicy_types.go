@@ -23,6 +23,18 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Protocol represents the L4 protocol that the FQDNNetworkPolicy allows
+type Protocol string
+
+const (
+	// TCPProtocol represents TCP
+	TCPProtocol Protocol = "TCP"
+	// UDPProtocol represents UDP
+	UDPProtocol Protocol = "UDP"
+	// SCTPProtocol represents SCTP
+	SCTPProtocol Protocol = "SCTP"
+)
+
 // FQDNNetworkPolicySpec defines the desired state of FQDNNetworkPolicy
 type FQDNNetworkPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -72,8 +84,8 @@ type FQDNNetworkPolicyEgressRule struct {
 
 // FQDNNetworkPolicyPort describes a port to allow traffic on
 type FQDNNetworkPolicyPort struct {
-	Port     int    `json:"port,omitempty"`
-	Protocol string `json:"protocol,omitempty"`
+	Port     int      `json:"port,omitempty"`
+	Protocol Protocol `json:"protocol,omitempty"`
 }
 
 // FQDNNetworkPolicyPeer represents a FQDN that the

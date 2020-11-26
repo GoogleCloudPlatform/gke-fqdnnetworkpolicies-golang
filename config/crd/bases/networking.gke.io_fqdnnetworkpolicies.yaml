@@ -48,6 +48,8 @@ spec:
                         port:
                           type: integer
                         protocol:
+                          description: Protocol represents the L4 protocol that the
+                            FQDNNetworkPolicy allows
                           type: string
                       type: object
                     type: array
