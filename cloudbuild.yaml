@@ -1,0 +1,32 @@
+steps:
+- id: 'Install kubebuilder'
+  name: 'golang:1.13'
+  args: ['/bin/sh', './tests/install-kubebuilder.sh']
+  waitFor: ['-']
+- id: 'go mod download'
+  name: 'golang:1.13'
+  args: ['go', 'mod', 'download']
+  waitFor: ['-']
+- id: 'go test'
+  name: 'golang:1.13'
+  args: ['go', 'test', './...', '-coverprofile', 'cover.out']
+  waitFor: ['go mod download', 'Install kubebuilder']
+- id: 'go vet'
+  name: 'golang:1.13'
+  args: ['go', 'vet', './...']
+  waitFor: ['go mod download', 'Install kubebuilder']
+- id: 'go fmt'
+  name: 'golang:1.13'
+  args: ['/bin/sh', '-c', '[ -z $(gofmt -l ./) ]']
+  waitFor: ['go mod download', 'Install kubebuilder']
+options:
+  machineType: N1_HIGHCPU_8
+  volumes:
+  - name: go-modules
+    path: /go
+  - name: kubebuilder
+    path: /kubebuilder
+  env:
+  - GO111MODULE=on
+  - KUBEBUILDER_VERSION=2.3.1
+  - KUBEBUILDER_ASSETS=/kubebuilder/bin
