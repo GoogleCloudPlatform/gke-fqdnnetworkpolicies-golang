@@ -42,14 +42,20 @@ spec:
                 properties:
                   ports:
                     items:
-                      description: FQDNNetworkPolicyPort describes a port to allow
-                        traffic on
+                      description: NetworkPolicyPort describes a port to allow traffic
+                        on
                       properties:
                         port:
-                          type: integer
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: The port on the given protocol. This can either
+                            be a numerical or named port on a pod. If this field is
+                            not provided, this matches all port names and numbers.
+                          x-kubernetes-int-or-string: true
                         protocol:
-                          description: Protocol represents the L4 protocol that the
-                            FQDNNetworkPolicy allows
+                          description: The protocol (TCP, UDP, or SCTP) which traffic
+                            must match. If not specified, this field defaults to TCP.
                           type: string
                       type: object
                     type: array
@@ -126,7 +132,13 @@ spec:
             lastSyncTime:
               format: date-time
               type: string
+            nextSyncTime:
+              format: date-time
+              type: string
+            reason:
+              type: string
             state:
+              description: State represents the state of the FQDNNetworkPolicy
               type: string
           required:
           - state

@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"golang.org/x/net/idna"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -49,13 +50,13 @@ func (r *FQDNNetworkPolicy) Default() {
 	for ie, rule := range r.Spec.Egress {
 		if rule.Ports != nil {
 			for ip, port := range rule.Ports {
-				if port.Protocol == "" {
+				if *port.Protocol == "" {
 					fqdnnetworkpolicylog.Info("No protocol set, defaulting to TCP",
 						"namespace", r.ObjectMeta.Namespace,
 						"name", r.ObjectMeta.Name,
 						"path", field.NewPath("spec").Child("egress").
 							Index(ie).Child("ports").Index(ip).String())
-					port.Protocol = TCPProtocol
+					*port.Protocol = v1.ProtocolTCP
 				}
 			}
 		}
@@ -114,20 +115,20 @@ func (r *FQDNNetworkPolicy) ValidatePorts() field.ErrorList {
 	for ie, rule := range r.Spec.Egress {
 		if rule.Ports != nil {
 			for ip, port := range rule.Ports {
-				if port.Port < 0 || port.Port > 65535 {
+				if port.Port.IntVal < 0 || port.Port.IntVal > 65535 {
 					allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("egress").
 						Index(ie).Child("ports").Index(ip).Child("port"),
 						port.Port, "Invalid port. Must be between 0 and 65535."))
 				}
-				if port.Port == 0 {
+				if port.Port.IntVal == 0 {
 					fqdnnetworkpolicylog.Info("port not set or set to 0, will match all ports",
 						"name", r.ObjectMeta.Name,
 						"namespace", r.ObjectMeta.Namespace,
 						"resource", field.NewPath("spec").Child("egress").
 							Index(ie).Child("ports").Index(ip).Child("port").String())
 				}
-				if port.Protocol != TCPProtocol && port.Protocol != UDPProtocol &&
-					port.Protocol != SCTPProtocol && port.Protocol != "" {
+				if *port.Protocol != v1.ProtocolTCP && *port.Protocol != v1.ProtocolUDP &&
+					*port.Protocol != v1.ProtocolSCTP && *port.Protocol != "" {
 					allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("egress").
 						Index(ie).Child("ports").Index(ip).Child("protocol"),
 						port.Port, "Invalid protocol. Must be TCP, UDP, or SCTP."))

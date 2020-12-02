@@ -17,22 +17,23 @@ limitations under the License.
 package v1alpha1
 
 import (
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// Protocol represents the L4 protocol that the FQDNNetworkPolicy allows
-type Protocol string
+// State represents the state of the FQDNNetworkPolicy
+type State string
 
 const (
-	// TCPProtocol represents TCP
-	TCPProtocol Protocol = "TCP"
-	// UDPProtocol represents UDP
-	UDPProtocol Protocol = "UDP"
-	// SCTPProtocol represents SCTP
-	SCTPProtocol Protocol = "SCTP"
+	// PendingState is the state of the FQDNNetworkPolicy when it's first created
+	PendingState State = "Pending"
+	// ActiveState is the state of the FQDNNetworkPolicy when the associated NetworkPolicy is created
+	ActiveState State = "Active"
+	// DestroyingState is the state of the FQDNNetworkPolicy when it's being destroyed
+	DestroyingState State = "Destroying"
 )
 
 // FQDNNetworkPolicySpec defines the desired state of FQDNNetworkPolicy
@@ -49,8 +50,10 @@ type FQDNNetworkPolicyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	State        string       `json:"state"`
+	State        State        `json:"state"`
+	Reason       string       `json:"reason,omitempty"`
 	LastSyncTime *metav1.Time `json:"lastSyncTime,omitempty"`
+	NextSyncTime *metav1.Time `json:"nextSyncTime,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -78,14 +81,8 @@ type FQDNNetworkPolicyList struct {
 // FQDNNetworkPolicySpec's podSelector. The traffic must match
 // both ports and to.
 type FQDNNetworkPolicyEgressRule struct {
-	Ports []FQDNNetworkPolicyPort `json:"ports,omitempty"`
-	To    []FQDNNetworkPolicyPeer `json:"to"`
-}
-
-// FQDNNetworkPolicyPort describes a port to allow traffic on
-type FQDNNetworkPolicyPort struct {
-	Port     int      `json:"port,omitempty"`
-	Protocol Protocol `json:"protocol,omitempty"`
+	Ports []networking.NetworkPolicyPort `json:"ports,omitempty"`
+	To    []FQDNNetworkPolicyPeer        `json:"to"`
 }
 
 // FQDNNetworkPolicyPeer represents a FQDN that the

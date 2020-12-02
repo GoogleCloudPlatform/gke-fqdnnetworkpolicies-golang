@@ -6,7 +6,7 @@ steps:
 - id: 'go mod download'
   name: 'golang:1.13'
   args: ['go', 'mod', 'download']
-  waitFor: ['-']
+  waitFor: ['Install kubebuilder']
 - id: 'go test'
   name: 'golang:1.13'
   args: ['go', 'test', './...', '-coverprofile', 'cover.out']
