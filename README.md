@@ -5,11 +5,55 @@ and not only IPs or CIDRs.
 
 ## How does it work?
 
-TODO
+A FQDNNetworkPolicy looks a lot like a NetworkPolicy, but you can configure hostnames
+in the "to" field:
+
+```
+apiVersion: networking.gke.io/v1alpha1
+kind: FQDNNetworkPolicy
+metadata:
+  name: example
+spec:
+  podSelector:
+    matchLabels:
+      role: example
+  egress:
+    - to:
+      - fqdns:
+        - example.com
+      ports:
+      - port: 443
+        protocol: TCP
+```
+
+When you create this FQDNNetworkPolicy, it will in turn create a corresponding NetworkPolicy with
+the same name, in the same namespace, that has the same `podSelector`, the same ports, but replacing
+the hostnames with corresponding IPs.
+
+### Annotations
+
+There are 2 annotations to know when working with FQDNNetworkPolicies.
+
+If a NetworkPolicy has been created by a FQDNNetworkPolicy, it has the `fqdnnetworkpolicies.networking.gke.io/owned-by`
+set to the name of the FQDNNetworkPolicy. If, when you create a FQDNNetworkPolicy, a NetworkPolicy with the same name
+already exists, then the FQDNNetworkPolicy will not do anything. You can have the FQDNNetworkPolicy "adopt" the
+NetworkPolicy by manually setting the `fqdnnetworkpolicies.networking.gke.io/owned-by` to the right value on the
+NetworkPolicy.
+
+By default, the NetworkPolicy associated with a FQDNNetworkPolicy gets deleted when you delete the FQDNNetworkPolicy.
+To prevent this behavior, set the `fqdnnetworkpolicies.networking.gke.io/delete-policy` annotation to `abandon` on the
+NetworkPolicy.
 
 ## Limitations
 
-TODO
+There are a few limitations to FQDNNetworkPolicies:
+
+* Only *egress* rules are supported.
+* Only *hostnames* are supported. In particular, you can't configure a FQDNNetworkPolicy with:
+  * IPs or CIDRs. Use NetworkPolicies directly for that.
+  * wildcard hostnames like `*.example.com`.
+* Only A and CNAME records are supported. In particular, AAAA records for IPv6 are not supported.
+* TODO
 
 ## Development
 
