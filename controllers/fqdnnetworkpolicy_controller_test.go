@@ -33,6 +33,9 @@ package controllers
 import (
 	networkingv1alpha1 "cloudsolutionsarchitects/fqdnnetworkpolicies/api/v1alpha1"
 	"context"
+	"errors"
+	"fmt"
+	"net"
 	"testing"
 	"time"
 
@@ -63,11 +66,50 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Namespace: fqdnNetworkPolicy.Namespace,
 				Name:      fqdnNetworkPolicy.Name,
 			}
-			It("Should create a NetworkPolicy of the same name", func() {
+			It("Should create a NetworkPolicy of the same name with the correct CIDRs", func() {
 				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
 				Eventually(func() error {
+					r := net.Resolver{}
+					// computing the expected IPs in the NetworkPolicy
+					// from the FQDNs in the FQDNNetworkPolicy
+					// We use a different lib for resolving than the one in the main code
+					expectedIPs := []string{}
+					for _, fer := range fqdnNetworkPolicy.Spec.Egress {
+						for _, to := range fer.To {
+							for _, fqdn := range to.FQDNs {
+								ips, err := r.LookupIP(ctx, "ip4", fqdn)
+								if err != nil {
+									return err
+								}
+								for _, ip := range ips {
+									expectedIPs = append(expectedIPs, ip.String())
+								}
+							}
+						}
+					}
+					// Getting the NetworkPolicy
 					networkPolicy := networking.NetworkPolicy{}
-					return k8sClient.Get(ctx, nn, &networkPolicy)
+					err := k8sClient.Get(ctx, nn, &networkPolicy)
+					if err != nil {
+						return err
+					}
+					total := 0
+					for _, egressRule := range networkPolicy.Spec.Egress {
+						// checking that every CIDR in the NetworkPolicy
+						// is in the expect list of IPs
+						total += len(egressRule.To)
+						for _, to := range egressRule.To {
+							// removing the /32 at the end of the CIDR
+							if !containsString(expectedIPs, string(to.IPBlock.CIDR[:len(to.IPBlock.CIDR)-3])) {
+								return errors.New("Unexpected IP in NetworkPolicy: " + string(to.IPBlock.CIDR[:len(to.IPBlock.CIDR)-3]) +
+									". Expected IPs: " + fmt.Sprint(expectedIPs))
+							}
+						}
+					}
+					if total != len(expectedIPs) {
+						return errors.New("Some expected IPs are not present in the NetworkPolicy")
+					}
+					return nil
 				}).Should(Succeed())
 			})
 			It("Should delete the NetworkPolicy when it's deleted", func() {

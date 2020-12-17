@@ -33,7 +33,10 @@ package controllers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
+
+	"github.com/miekg/dns"
 
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,7 +143,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		}
 		return ctrl.Result{RequeueAfter: retry}, nil
 	}
-	log.Info("NetworkPolicy updated")
+	log.Info("NetworkPolicy updated, next sync in " + fmt.Sprint(nextSyncIn))
 
 	fqdnNetworkPolicy.Status.State = networkingv1alpha1.ActiveState
 	nextSyncTime := metav1.NewTime(time.Now().Add(*nextSyncIn))
@@ -201,7 +204,7 @@ func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
 	}
 	networkPolicy.Annotations[ownerAnnotation] = fqdnNetworkPolicy.Name
 	networkPolicy.Spec.PodSelector = fqdnNetworkPolicy.Spec.PodSelector
-	rules, err := getNetworkPolicyEgressRules(fqdnNetworkPolicy.Spec.Egress)
+	rules, nextSync, err := r.getNetworkPolicyEgressRules(ctx, fqdnNetworkPolicy)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +224,7 @@ func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
 		return nil, err
 	}
 
-	return getNextSyncIn(), nil
+	return nextSync, nil
 }
 
 // deleteNetworkPolicy deletes the NetworkPolicy associated with the fqdnNetworkPolicy FQDNNetworkPolicy
@@ -259,46 +262,80 @@ func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
 }
 
 // getNetworkPolicyEgressRules returns a slice of NetworkPolicyEgressRules based on the
-// provided slice of FQDNNetworkPolicyEgressRules
-func getNetworkPolicyEgressRules(fer []networkingv1alpha1.FQDNNetworkPolicyEgressRule) ([]networking.NetworkPolicyEgressRule, error) {
+// provided slice of FQDNNetworkPolicyEgressRules, also returns when the next sync should happen
+// based on the TTL of records
+func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha1.FQDNNetworkPolicy) ([]networking.NetworkPolicyEgressRule, *time.Duration, error) {
+	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
+	fer := fqdnNetworkPolicy.Spec.Egress
 	rules := []networking.NetworkPolicyEgressRule{}
-	// TODO
-	ip := networking.IPBlock{CIDR: "192.168.1.1/32"}
-	peer := networking.NetworkPolicyPeer{IPBlock: &ip}
 
+	// getting the nameservers from the local /etc/resolv.conf
+	ns, err := getNameservers()
+	if err != nil {
+		log.Error(err, "unable to get nameservers")
+		return nil, nil, err
+	}
+	var nextSync uint32
+	// Highest value possible for the resync time on the FQDNNetworkPolicy
+	// TODO what should this be?
+	nextSync = 30
+
+	// TODO what do we do if nothing resolves, or if the list is empty?
+	// What's the behavior of NetworkPolicies in that case?
 	for _, frule := range fer {
+		peers := []networking.NetworkPolicyPeer{}
+		for _, to := range frule.To {
+			for _, fqdn := range to.FQDNs {
+				f := fqdn
+				// The FQDN in the DNS request needs to end by a dot
+				if l := fqdn[len(fqdn)-1]; l != '.' {
+					f = fqdn + "."
+				}
+				m := new(dns.Msg)
+				m.SetQuestion(f, dns.TypeA)
+				c := new(dns.Client)
+				c.SingleInflight = true
+
+				// TODO: We're always using the first nameserver. Should we do
+				// something different? Note from Jens:
+				// by default only if options rotate is set in resolv.conf
+				// they are rotated. Otherwise the first is used, after a (5s)
+				// timeout the next etc. So this is not too bad for now.
+				r, _, err := c.Exchange(m, ns[0]+":53")
+				if err != nil {
+					log.Error(err, "unable to resolve "+f)
+
+					continue
+				}
+				if len(r.Answer) == 0 {
+					log.Error(nil, "could not find A record for "+f)
+					continue
+				}
+				for _, ans := range r.Answer {
+					if t, ok := ans.(*dns.A); ok {
+						// Adding a peer per answer
+						peers = append(peers, networking.NetworkPolicyPeer{
+							IPBlock: &networking.IPBlock{CIDR: t.A.String() + "/32"}})
+						// We want the next sync for the FQDNNetworkPolicy to happen
+						// just after the TTL of the DNS record has expired.
+						// Because a single FQDNNetworkPolicy may have different DNS
+						// records with different TTLs, we pick the lowest one
+						// and resynchronise after that.
+						if ans.Header().Ttl < nextSync {
+							nextSync = ans.Header().Ttl
+						}
+					}
+				}
+			}
+		}
+
 		rules = append(rules, networking.NetworkPolicyEgressRule{
 			Ports: frule.Ports,
-			To:    []networking.NetworkPolicyPeer{peer},
+			To:    peers,
 		})
 	}
 
-	return rules, nil
-}
+	n := time.Second * time.Duration(nextSync)
 
-// TODO
-func getNextSyncIn() *time.Duration {
-	t := time.Second * time.Duration(30)
-	return &t
-}
-
-// Helper function to check string exists in a slice of strings.
-func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
-// Helper function to remove string from a slice of string
-func removeString(slice []string, s string) (result []string) {
-	for _, item := range slice {
-		if item == s {
-			continue
-		}
-		result = append(result, item)
-	}
-	return
+	return rules, &n, nil
 }
