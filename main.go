@@ -40,8 +40,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	networkingv1alpha1 "cloudsolutionsarchitects/fqdnnetworkpolicies/api/v1alpha1"
-	"cloudsolutionsarchitects/fqdnnetworkpolicies/controllers"
+	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	"github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/controllers"
 	// +kubebuilder:scaffold:imports
 )
 

@@ -34,7 +34,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	networkingv1alpha1 "cloudsolutionsarchitects/fqdnnetworkpolicies/api/v1alpha1"
+	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
