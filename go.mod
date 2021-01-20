@@ -1,4 +1,4 @@
-module cloudsolutionsarchitects/fqdnnetworkpolicies
+module github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang
 
 go 1.15
 

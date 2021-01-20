@@ -67,7 +67,7 @@ You need the following tools installed on your development workstation.
 * kubectl
 * Kind
 * kustomize
-* kubebuilder
+* kubebuilder (2.3.1, you may need to export the [KUBEBUILDER_ASSET variable](https://book.kubebuilder.io/quick-start.html))
 
 ### Getting up and running
 

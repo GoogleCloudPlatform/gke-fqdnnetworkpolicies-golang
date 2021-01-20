@@ -1,5 +1,5 @@
 domain: gke.io
-repo: cloudsolutionsarchitects/fqdnnetworkpolicies
+repo: github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang
 resources:
 - group: networking
   kind: FQDNNetworkPolicy

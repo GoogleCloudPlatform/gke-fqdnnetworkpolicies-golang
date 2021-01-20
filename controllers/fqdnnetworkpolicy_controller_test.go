@@ -31,13 +31,14 @@ limitations under the License.
 package controllers
 
 import (
-	networkingv1alpha1 "cloudsolutionsarchitects/fqdnnetworkpolicies/api/v1alpha1"
 	"context"
 	"errors"
 	"fmt"
 	"net"
 	"testing"
 	"time"
+
+	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
