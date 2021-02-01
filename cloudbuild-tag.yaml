@@ -40,6 +40,25 @@ steps:
   - --cache=true
   - --cache-ttl=24h
   waitFor: ['go test', 'go vet', 'go fmt']
+- id: 'Generate manifests'
+  name: 'gcr.io/$PROJECT_ID/kustomize:latest'
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    cd config/manager
+    kustomize edit set image controller=gcr.io/$PROJECT_ID/controller:$TAG_NAME
+    cd ../..
+    kustomize build config/default > fqdnnetworkpolicies.yaml
+  waitFor: ['go test', 'go vet', 'go fmt']
+- id: 'Publish manifests'
+  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gsutil
+  - cp
+  - fqdnnetworkpolicies.yaml
+  - gs://fqdnnetworkpolicies-manifests/$TAG_NAME.yaml
+  waitFor: ['Generate manifests']
 options:
   machineType: N1_HIGHCPU_8
   volumes:
