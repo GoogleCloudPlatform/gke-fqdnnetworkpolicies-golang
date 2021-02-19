@@ -329,6 +329,15 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 			}
 		}
 
+		if len(peers) == 0 {
+			// If no peers have been found (most likely because the provided
+			// FQDNs don't resolve to anything), then we don't create an egress
+			// rule at all to fail close. If we create one with only a "ports"
+			// section, but no "to" section, we're failing open.
+			log.Info("No peers found, skipping egress rule.")
+			continue
+		}
+
 		rules = append(rules, networking.NetworkPolicyEgressRule{
 			Ports: frule.Ports,
 			To:    peers,

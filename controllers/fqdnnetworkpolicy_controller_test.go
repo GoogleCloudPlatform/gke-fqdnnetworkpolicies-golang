@@ -121,6 +121,37 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				}).ShouldNot(Succeed())
 			})
 		})
+		Context("with a non-existent FQDN", func() {
+			ctx := context.Background()
+			fqdnNetworkPolicy := networkingv1alpha1.FQDNNetworkPolicy{}
+			fqdnNetworkPolicy.GetValidNonExistentFQDNResource()
+			fqdnNetworkPolicy.Namespace = "default"
+			nn := types.NamespacedName{
+				Namespace: fqdnNetworkPolicy.Namespace,
+				Name:      fqdnNetworkPolicy.Name,
+			}
+			It("Should create a NetworkPolicy of the same name with no egress rule", func() {
+				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
+				Eventually(func() error {
+
+					// Getting the NetworkPolicy
+					networkPolicy := networking.NetworkPolicy{}
+					err := k8sClient.Get(ctx, nn, &networkPolicy)
+					if err != nil {
+						return err
+					}
+					Expect(len(networkPolicy.Spec.Egress)).Should(BeZero())
+					return nil
+				}).Should(Succeed())
+			})
+			It("Should delete the NetworkPolicy when it's deleted", func() {
+				Expect(k8sClient.Delete(ctx, &fqdnNetworkPolicy)).Should(Succeed())
+				Eventually(func() error {
+					networkPolicy := networking.NetworkPolicy{}
+					return k8sClient.Get(ctx, nn, &networkPolicy)
+				}).ShouldNot(Succeed())
+			})
+		})
 		Context("when a conflicting NetworkPolicy already exists", func() {
 			ctx := context.Background()
 			fqdnNetworkPolicy := getFQDNNetworkPolicy("context2", "default")

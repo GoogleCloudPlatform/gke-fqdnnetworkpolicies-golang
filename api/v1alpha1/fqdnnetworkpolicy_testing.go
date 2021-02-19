@@ -70,6 +70,10 @@ func (r *FQDNNetworkPolicy) GetValidNoProtocolResource() *FQDNNetworkPolicy {
 	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid_noprotocol.yaml")
 }
 
+func (r *FQDNNetworkPolicy) GetValidNonExistentFQDNResource() *FQDNNetworkPolicy {
+	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
+}
+
 func (r *FQDNNetworkPolicy) GetInvalidResource() *FQDNNetworkPolicy {
 	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid.yaml")
 }
