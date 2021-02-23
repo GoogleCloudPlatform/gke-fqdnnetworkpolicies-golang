@@ -86,8 +86,8 @@ current implementation:
 -  The current implementation does not intercept actual pod DNS requests
    unlike CNI based solutions such as
    [CiliumNetworkPolicy](https://docs.cilium.io/en/v1.9/concepts/kubernetes/policy/#ciliumnetworkpolicy).
-   It relies on the controller to update the NetworkPolicy based on results of [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) when connecting is recommended.
-   polling and repolling after TTL expires. Since there might be conditions where the new IP address is not yet allowed by NetworkPolicy, the use of 
+   It relies on the controller to update the NetworkPolicy based on results of
+   polling and repolling after TTL expires. Since there might be conditions where the new IP address is not yet allowed by NetworkPolicy, the use of  [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) when connecting is recommended.
 -  Since polling is currently only done on a single host, don't use the
    current implementation for allowing access to hosts that dynamically return
    different A records on subsequent requests, as different hosts might get
