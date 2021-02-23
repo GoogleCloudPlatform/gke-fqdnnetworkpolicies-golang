@@ -128,11 +128,13 @@ Follow these instructions to install the FQDNNetworkPolicies controller in your 
 
 ## Uninstall
 
-To uninstall the FQDNNetworkPolicies controller from your GKE cluster, simply delete the resources.
+To uninstall the FQDNNetworkPolicies controller from your GKE cluster, delete the FQDNNetworkPolicies first,
+and then remove the resources.
 Replace `YOUR_VERSION` by the version you are using.
 
 ```
 export VERSION=YOUR_VERSION
+kubectl delete fqdnnetworkpolicies.networking.gke.io -A --all
 kubectl delete -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
 ```
 
