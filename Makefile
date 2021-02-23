@@ -94,3 +94,9 @@ deploy-cert-manager:
 
 follow-manager-logs:
 	kubectl -n fqdnnetworkpolicies-system logs -l control-plane=controller-manager -c manager -f
+
+latest:
+	test ! -z ${VERSION}
+	echo ${VERSION} > fqdnnetworkpolicies-latest
+	gsutil cp fqdnnetworkpolicies-latest gs://fqdnnetworkpolicies-manifests/latest
+	rm fqdnnetworkpolicies-latest

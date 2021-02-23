@@ -122,16 +122,17 @@ Follow these instructions to install the FQDNNetworkPolicies controller in your 
 1. Install the FQDNNetworkPolicy controller.
 
    ```
-   export VERSION=0.1
+   export VERSION=$(curl https://storage.googleapis.com/fqdnnetworkpolicies-manifests/latest)
    kubectl apply -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
    ```
 
 ## Uninstall
 
 To uninstall the FQDNNetworkPolicies controller from your GKE cluster, simply delete the resources.
+Replace `YOUR_VERSION` by the version you are using.
 
 ```
-export VERSION=0.1
+export VERSION=YOUR_VERSION
 kubectl delete -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
 ```
 
@@ -179,3 +180,13 @@ You need the following tools installed on your development workstation.
    ```
 
 1. Explore the Makefile for other available commands, and read the [kubebuilder book](https://book.kubebuilder.io/introduction.html).
+
+### Creating a release
+
+1. Tag the commit you want to mark as a release. We follow semantic versioning.
+1. Push the commit to GitHub.
+1. Create a release in GitHub.
+1. If you want that release to be the new default one, run:
+   ```
+   VERSION=$YOUR_TAG make latest
+   ```
