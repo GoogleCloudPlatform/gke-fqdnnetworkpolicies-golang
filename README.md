@@ -109,6 +109,31 @@ node in the cluster, which together with
 [NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/)
 can improve stability for dynamic hosts.
 
+## Installation
+
+Follow these instructions to install the FQDNNetworkPolicies controller in your GKE cluster.
+
+1. Install [cert-manager](https://cert-manager.io/docs/installation/kubernetes/).
+
+   ```
+   kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.yaml
+   ```
+
+1. Install the FQDNNetworkPolicy controller.
+
+   ```
+   export VERSION=0.1
+   kubectl apply -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
+   ```
+
+## Uninstall
+
+To uninstall the FQDNNetworkPolicies controller from your GKE cluster, simply delete the resources.
+
+```
+export VERSION=0.1
+kubectl delete -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
+```
 
 ## Development
 
