@@ -1,7 +1,11 @@
 # FQDNNetworkPolicies
 
-FQDNNetworkPolicies let you create Kubernetes Network Policies based on FQDNs
-and not only IPs or CIDRs.
+FQDNNetworkPolicies let you create Kubernetes Network Policies based on Fully
+Qualified Domain Names(FQDNs) in addition to the standard functionality that
+only allows IP address ranges (CIDR ranges). This implementation uses a custom
+resource definition (CRD) and a controller inside the Kubernetes cluster that
+periodically polls the DNS service and emits a NetworkPolicy object for every FQDNNetworkPolicy
+object. 
 
 ## How does it work?
 
@@ -26,9 +30,17 @@ spec:
         protocol: TCP
 ```
 
-When you create this FQDNNetworkPolicy, it will in turn create a corresponding NetworkPolicy with
+When you create this FQDNNetworkPolicy, the controller will in turn create a corresponding NetworkPolicy with
 the same name, in the same namespace, that has the same `podSelector`, the same ports, but replacing
-the hostnames with corresponding IPs.
+the hostnames with corresponding IP addresss it received by polling.
+
+We recommend the use of [NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to improve stability of records and reduce the number of DNS requests sent outside of the cluster.
+
+**Note**: Just like with normal network policies, once specific pods are selected,
+   all not explicitly allowed traffic is denied. Since FQDNNetworkPolicies are
+   egress policies, we recommend to explicitly allow DNS traffic to allow name
+   resolution. See
+   [Kubernetes Network Policy Recipes](https://github.com/ahmetb/kubernetes-network-policy-recipes/blob/master/11-deny-egress-traffic-from-an-application.md#allowing-dns-traffic)
 
 ### Annotations
 
@@ -46,15 +58,57 @@ NetworkPolicy.
 
 ## Limitations
 
-There are a few limitations to FQDNNetworkPolicies:
+There are a few functional limitations to FQDNNetworkPolicies:
 
 * Only *egress* rules are supported.
 * Only *hostnames* are supported. In particular, you can't configure a FQDNNetworkPolicy with:
-  * IPs or CIDRs. Use NetworkPolicies directly for that.
+  * IP addresses or CIDR blocks. Use NetworkPolicies directly for that.
   * wildcard hostnames like `*.example.com`.
 * Only A and CNAME records are supported. In particular, AAAA records for IPv6 are not supported.
 * Records defined in the `/etc/hosts` file are not supported. Those records are probably static, so we recommend you use
   a normal `NetworkPolicy` for them.
+
+### Use case limitations
+
+The current controller implementation polls all domains from a single controller
+instance in the Kubernetes cluster and repolls records after the TTL of the
+first record expires. This leads to the following use case limitations in the
+current implementation:
+
+-  Since traffic blocking is implemented using existing Network Policies,
+   FQDNNetworkPolicies is not a Layer 7 firewall but only blocks traffic based
+   on IP addresses. If you need actual traffic filtering based on specific
+   domains, use a proxy-based solution or consider
+   [Egress gateways](https://istio.io/latest/docs/tasks/traffic-management/egress/egress-gateway/)
+   in Istio for traffic filtering. An example where Layer 7 firewall behaviour
+   differs from NetworkPolicies is when multiple hosts are using the same IP
+   address - this implementation allows all of them as soon as one host is allowed.
+-  The current implementation does not intercept actual pod DNS requests
+   unlike CNI based solutions such as
+   [CiliumNetworkPolicy](https://docs.cilium.io/en/v1.9/concepts/kubernetes/policy/#ciliumnetworkpolicy).
+   It relies on the controller to update the NetworkPolicy based on results of
+   polling and repolling after TTL expires. Since there might be conditions where the new IP address is not yet allowed by NetworkPolicy, the use of  [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) when connecting is recommended.
+-  Since polling is currently only done on a single host, don't use the
+   current implementation for allowing access to hosts that dynamically return
+   different A records on subsequent requests, as different hosts might get
+   different results and results might not be cached. Examples of such dynamic
+   hosts are www.google.com, www.googleapis.com www.facebook.com and services
+   behind AWS Route53 or Elastic Load Balancing. 
+-  The use of
+   [NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/)
+   is recommend to improve stability of records and reduce the number of DNS
+   requests sent outside of the cluster 
+-  For allowing traffic to Google APIs on Google Cloud, use a
+   [Private Google Access](https://cloud.google.com/vpc/docs/configure-private-google-access)
+   option instead and
+   [configure DNS accordingly](https://cloud.google.com/vpc/docs/configure-private-google-access#config-domain).
+   Then allow the respective IP addresses using a Standard Network Policy
+
+An upcoming controller implementation will optionally poll all domains on each
+node in the cluster, which together with
+[NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/)
+can improve stability for dynamic hosts.
+
 
 ## Development
 
