@@ -98,5 +98,5 @@ follow-manager-logs:
 latest:
 	test ! -z ${VERSION}
 	echo ${VERSION} > fqdnnetworkpolicies-latest
-	gsutil cp fqdnnetworkpolicies-latest gs://fqdnnetworkpolicies-manifests/latest
+	gsutil -h "Cache-Control: no-cache" cp fqdnnetworkpolicies-latest gs://fqdnnetworkpolicies-manifests/latest
 	rm fqdnnetworkpolicies-latest
