@@ -149,7 +149,7 @@ You need the following tools installed on your development workstation.
 * kustomize
 * kubebuilder (2.3.1, you may need to export the [KUBEBUILDER_ASSET variable](https://book.kubebuilder.io/quick-start.html))
 
-### Getting up and running
+### Building and running locally
 
 1. Create your Kind cluster.
 
@@ -184,7 +184,7 @@ You need the following tools installed on your development workstation.
 ### Creating a release
 
 1. Tag the commit you want to mark as a release. We follow semantic versioning.
-1. Push the commit to GitHub.
+1. Push the tag to GitHub.
 1. Create a release in GitHub.
 1. If you want that release to be the new default one, run:
    ```
