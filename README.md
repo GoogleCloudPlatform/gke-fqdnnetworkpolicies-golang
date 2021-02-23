@@ -109,6 +109,32 @@ node in the cluster, which together with
 [NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/)
 can improve stability for dynamic hosts.
 
+## Installation
+
+Follow these instructions to install the FQDNNetworkPolicies controller in your GKE cluster.
+
+1. Install [cert-manager](https://cert-manager.io/docs/installation/kubernetes/).
+
+   ```
+   kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.yaml
+   ```
+
+1. Install the FQDNNetworkPolicy controller.
+
+   ```
+   export VERSION=$(curl https://storage.googleapis.com/fqdnnetworkpolicies-manifests/latest)
+   kubectl apply -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
+   ```
+
+## Uninstall
+
+To uninstall the FQDNNetworkPolicies controller from your GKE cluster, simply delete the resources.
+Replace `YOUR_VERSION` by the version you are using.
+
+```
+export VERSION=YOUR_VERSION
+kubectl delete -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
+```
 
 ## Development
 
@@ -123,7 +149,7 @@ You need the following tools installed on your development workstation.
 * kustomize
 * kubebuilder (2.3.1, you may need to export the [KUBEBUILDER_ASSET variable](https://book.kubebuilder.io/quick-start.html))
 
-### Getting up and running
+### Building and running locally
 
 1. Create your Kind cluster.
 
@@ -154,3 +180,13 @@ You need the following tools installed on your development workstation.
    ```
 
 1. Explore the Makefile for other available commands, and read the [kubebuilder book](https://book.kubebuilder.io/introduction.html).
+
+### Creating a release
+
+1. Tag the commit you want to mark as a release. We follow semantic versioning.
+1. Push the tag to GitHub.
+1. Create a release in GitHub.
+1. If you want that release to be the new default one, run:
+   ```
+   VERSION=$YOUR_TAG make latest
+   ```
