@@ -291,10 +291,12 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				if l := fqdn[len(fqdn)-1]; l != '.' {
 					f = fqdn + "."
 				}
-				m := new(dns.Msg)
-				m.SetQuestion(f, dns.TypeA)
 				c := new(dns.Client)
 				c.SingleInflight = true
+
+				// A records
+				m := new(dns.Msg)
+				m.SetQuestion(f, dns.TypeA)
 
 				// TODO: We're always using the first nameserver. Should we do
 				// something different? Note from Jens:
@@ -304,7 +306,6 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				r, _, err := c.Exchange(m, ns[0]+":53")
 				if err != nil {
 					log.Error(err, "unable to resolve "+f)
-
 					continue
 				}
 				if len(r.Answer) == 0 {
@@ -316,6 +317,40 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 						// Adding a peer per answer
 						peers = append(peers, networking.NetworkPolicyPeer{
 							IPBlock: &networking.IPBlock{CIDR: t.A.String() + "/32"}})
+						// We want the next sync for the FQDNNetworkPolicy to happen
+						// just after the TTL of the DNS record has expired.
+						// Because a single FQDNNetworkPolicy may have different DNS
+						// records with different TTLs, we pick the lowest one
+						// and resynchronise after that.
+						if ans.Header().Ttl < nextSync {
+							nextSync = ans.Header().Ttl
+						}
+					}
+				}
+
+				// AAAA records
+				m6 := new(dns.Msg)
+				m6.SetQuestion(f, dns.TypeAAAA)
+
+				// TODO: We're always using the first nameserver. Should we do
+				// something different? Note from Jens:
+				// by default only if options rotate is set in resolv.conf
+				// they are rotated. Otherwise the first is used, after a (5s)
+				// timeout the next etc. So this is not too bad for now.
+				r6, _, err := c.Exchange(m6, ns[0]+":53")
+				if err != nil {
+					log.Error(err, "unable to resolve "+f)
+					continue
+				}
+				if len(r6.Answer) == 0 {
+					log.Error(nil, "could not find AAAA record for "+f)
+					continue
+				}
+				for _, ans := range r6.Answer {
+					if t, ok := ans.(*dns.AAAA); ok {
+						// Adding a peer per answer
+						peers = append(peers, networking.NetworkPolicyPeer{
+							IPBlock: &networking.IPBlock{CIDR: t.AAAA.String() + "/128"}})
 						// We want the next sync for the FQDNNetworkPolicy to happen
 						// just after the TTL of the DNS record has expired.
 						// Because a single FQDNNetworkPolicy may have different DNS
