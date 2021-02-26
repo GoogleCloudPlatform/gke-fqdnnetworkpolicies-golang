@@ -84,6 +84,10 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 									if ok && derr.IsNotFound {
 										continue
 									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continue
+									}
 									return err
 								}
 								for _, ip := range ip4s {
@@ -93,6 +97,10 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 								if err != nil {
 									derr, ok := err.(*net.DNSError)
 									if ok && derr.IsNotFound {
+										continue
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
 										continue
 									}
 									return err
