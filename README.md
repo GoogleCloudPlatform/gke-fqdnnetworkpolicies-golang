@@ -65,6 +65,7 @@ There are a few functional limitations to FQDNNetworkPolicies:
   * IP addresses or CIDR blocks. Use NetworkPolicies directly for that.
   * wildcard hostnames like `*.example.com`.
 * Only A, AAAA, and CNAME records are supported.
+  * Google Cloud VPCs and GKE do not currently support IPv6, so AAAA records are not relevant in their context.
 * Records defined in the `/etc/hosts` file are not supported. Those records are probably static, so we recommend you use
   a normal `NetworkPolicy` for them.
 

@@ -80,30 +80,36 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 							for _, fqdn := range to.FQDNs {
 								ip4s, err := r.LookupIP(ctx, "ip4", fqdn)
 								if err != nil {
+									continuing := false
 									derr, ok := err.(*net.DNSError)
 									if ok && derr.IsNotFound {
-										continue
+										continuing = true
 									}
 									aerr, ok := err.(*net.AddrError)
 									if ok && aerr.Err == "no suitable address found" {
-										continue
+										continuing = true
 									}
-									return err
+									if !continuing {
+										return err
+									}
 								}
 								for _, ip := range ip4s {
 									expectedIPs = append(expectedIPs, ip.String()+"/32")
 								}
 								ip6s, err := r.LookupIP(ctx, "ip6", fqdn)
 								if err != nil {
+									continuing := false
 									derr, ok := err.(*net.DNSError)
 									if ok && derr.IsNotFound {
-										continue
+										continuing = true
 									}
 									aerr, ok := err.(*net.AddrError)
 									if ok && aerr.Err == "no suitable address found" {
-										continue
+										continuing = true
 									}
-									return err
+									if !continuing {
+										return err
+									}
 								}
 								for _, ip := range ip6s {
 									expectedIPs = append(expectedIPs, ip.String()+"/128")

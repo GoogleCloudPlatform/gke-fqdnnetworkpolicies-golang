@@ -310,7 +310,6 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				}
 				if len(r.Answer) == 0 {
 					log.Error(nil, "could not find A record for "+f)
-					continue
 				}
 				for _, ans := range r.Answer {
 					if t, ok := ans.(*dns.A); ok {
@@ -344,7 +343,6 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				}
 				if len(r6.Answer) == 0 {
 					log.Error(nil, "could not find AAAA record for "+f)
-					continue
 				}
 				for _, ans := range r6.Answer {
 					if t, ok := ans.(*dns.AAAA); ok {
