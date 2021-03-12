@@ -78,12 +78,41 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 					for _, fer := range fqdnNetworkPolicy.Spec.Egress {
 						for _, to := range fer.To {
 							for _, fqdn := range to.FQDNs {
-								ips, err := r.LookupIP(ctx, "ip4", fqdn)
+								ip4s, err := r.LookupIP(ctx, "ip4", fqdn)
 								if err != nil {
-									return err
+									continuing := false
+									derr, ok := err.(*net.DNSError)
+									if ok && derr.IsNotFound {
+										continuing = true
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continuing = true
+									}
+									if !continuing {
+										return err
+									}
 								}
-								for _, ip := range ips {
-									expectedIPs = append(expectedIPs, ip.String())
+								for _, ip := range ip4s {
+									expectedIPs = append(expectedIPs, ip.String()+"/32")
+								}
+								ip6s, err := r.LookupIP(ctx, "ip6", fqdn)
+								if err != nil {
+									continuing := false
+									derr, ok := err.(*net.DNSError)
+									if ok && derr.IsNotFound {
+										continuing = true
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continuing = true
+									}
+									if !continuing {
+										return err
+									}
+								}
+								for _, ip := range ip6s {
+									expectedIPs = append(expectedIPs, ip.String()+"/128")
 								}
 							}
 						}
@@ -101,8 +130,8 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 						total += len(egressRule.To)
 						for _, to := range egressRule.To {
 							// removing the /32 at the end of the CIDR
-							if !containsString(expectedIPs, string(to.IPBlock.CIDR[:len(to.IPBlock.CIDR)-3])) {
-								return errors.New("Unexpected IP in NetworkPolicy: " + string(to.IPBlock.CIDR[:len(to.IPBlock.CIDR)-3]) +
+							if !containsString(expectedIPs, string(to.IPBlock.CIDR)) {
+								return errors.New("Unexpected IP in NetworkPolicy: " + string(to.IPBlock.CIDR) +
 									". Expected IPs: " + fmt.Sprint(expectedIPs))
 							}
 						}
