@@ -43,7 +43,7 @@ import (
 )
 
 // log is for logging in this package.
-var fqdnnetworkpolicylog = logf.Log.WithName("fqdnnetworkpolicy-resource")
+var fqdnnetworkpolicylog = logf.Log.WithName("fqdnnetworkpolicy-webhook")
 
 func (r *FQDNNetworkPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -59,13 +59,13 @@ var _ webhook.Defaulter = &FQDNNetworkPolicy{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) Default() {
-	fqdnnetworkpolicylog.Info("default", "name", r.Name)
+	fqdnnetworkpolicylog.V(1).Info("Setting defaults on incoming resource", "name", r.Name)
 
 	for ie, rule := range r.Spec.Egress {
 		if rule.Ports != nil {
 			for ip, port := range rule.Ports {
 				if *port.Protocol == "" {
-					fqdnnetworkpolicylog.Info("No protocol set, defaulting to TCP",
+					fqdnnetworkpolicylog.V(1).Info("No protocol set, defaulting to TCP",
 						"namespace", r.ObjectMeta.Namespace,
 						"name", r.ObjectMeta.Name,
 						"path", field.NewPath("spec").Child("egress").
@@ -84,7 +84,7 @@ var _ webhook.Validator = &FQDNNetworkPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) ValidateCreate() error {
-	fqdnnetworkpolicylog.Info("validate create", "name", r.Name)
+	fqdnnetworkpolicylog.V(1).Info("validate create", "name", r.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, r.ValidatePorts()...)
@@ -100,7 +100,7 @@ func (r *FQDNNetworkPolicy) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) ValidateUpdate(old runtime.Object) error {
-	fqdnnetworkpolicylog.Info("validate update", "name", r.Name)
+	fqdnnetworkpolicylog.V(1).Info("validate update", "name", r.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, r.ValidatePorts()...)

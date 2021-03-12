@@ -46,6 +46,7 @@ steps:
   - |
     cd config/manager
     kustomize edit set image controller=gcr.io/$PROJECT_ID/controller:$TAG_NAME
+    echo "DEV_MODE=false" > manager.env
     cd ../..
     kustomize build config/default > fqdnnetworkpolicies.yaml
   waitFor: ['go test', 'go vet', 'go fmt']

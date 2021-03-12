@@ -14,3 +14,9 @@
 
 resources:
 - manager.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- envs:
+  - manager.env
+  name: manager-config

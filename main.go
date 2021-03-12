@@ -66,7 +66,12 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	devMode, devModeSet := os.LookupEnv("DEV_MODE")
+	if devModeSet && devMode == "true" {
+		ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	} else {
+		ctrl.SetLogger(zap.New(zap.UseDevMode(false)))
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
