@@ -41,6 +41,12 @@ spec:
         - /manager
         args:
         - --enable-leader-election
+        env:
+        - name: DEV_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: manager-config
+              key: DEV_MODE
         image: controller:latest
         name: manager
         resources:

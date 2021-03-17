@@ -145,6 +145,17 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 	}
 	log.Info("NetworkPolicy updated, next sync in " + fmt.Sprint(nextSyncIn))
 
+	// Need to fetch the object again before updating it
+	// as its status may have changed since the first time
+	// we fetched it.
+	if err := r.Get(ctx, client.ObjectKey{
+		Namespace: req.Namespace,
+		Name:      req.Name,
+	}, fqdnNetworkPolicy); err != nil {
+		log.Error(err, "unable to fetch FQDNNetworkPolicy")
+		return ctrl.Result{}, err
+	}
+
 	fqdnNetworkPolicy.Status.State = networkingv1alpha1.ActiveState
 	nextSyncTime := metav1.NewTime(time.Now().Add(*nextSyncIn))
 	fqdnNetworkPolicy.Status.NextSyncTime = &nextSyncTime
@@ -178,14 +189,14 @@ func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
 	}, networkPolicy); err != nil {
 		if client.IgnoreNotFound(err) == nil {
 			// If there is none, that's OK, it means that we just haven't created it yet
-			log.Info("associated NetworkPolicy doesn't exist, creating it")
+			log.V(1).Info("associated NetworkPolicy doesn't exist, creating it")
 			toCreate = true
 		} else {
 			return nil, err
 		}
 	}
 	if !toCreate {
-		log.V(1).Info("Found NetworkPolicy")
+		log.V(2).Info("Found NetworkPolicy")
 	}
 
 	// If we have found a NetworkPolicy, but it doesn't have the right annotation
@@ -250,7 +261,7 @@ func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
 		return nil
 	}
 	if networkPolicy.Annotations[ownerAnnotation] != fqdnNetworkPolicy.Name {
-		log.Error(nil, "NetworkPolicy is not owned by FQDNNetworkPolicy, not deleting")
+		log.Info("NetworkPolicy is not owned by FQDNNetworkPolicy, not deleting")
 		return nil
 	}
 	if err := r.Delete(ctx, networkPolicy); err != nil {
@@ -309,7 +320,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 					continue
 				}
 				if len(r.Answer) == 0 {
-					log.Error(nil, "could not find A record for "+f)
+					log.V(1).Info("could not find A record for " + f)
 				}
 				for _, ans := range r.Answer {
 					if t, ok := ans.(*dns.A); ok {
@@ -342,7 +353,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 					continue
 				}
 				if len(r6.Answer) == 0 {
-					log.Error(nil, "could not find AAAA record for "+f)
+					log.V(1).Info("could not find AAAA record for " + f)
 				}
 				for _, ans := range r6.Answer {
 					if t, ok := ans.(*dns.AAAA); ok {
@@ -367,7 +378,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 			// FQDNs don't resolve to anything), then we don't create an egress
 			// rule at all to fail close. If we create one with only a "ports"
 			// section, but no "to" section, we're failing open.
-			log.Info("No peers found, skipping egress rule.")
+			log.V(1).Info("No peers found, skipping egress rule.")
 			continue
 		}
 
