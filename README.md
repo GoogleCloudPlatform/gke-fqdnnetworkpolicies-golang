@@ -68,6 +68,9 @@ There are a few functional limitations to FQDNNetworkPolicies:
   * Google Cloud VPCs and GKE do not currently support IPv6, so AAAA records are not relevant in their context.
 * Records defined in the `/etc/hosts` file are not supported. Those records are probably static, so we recommend you use
   a normal `NetworkPolicy` for them.
+* When using an [IDN](https://en.wikipedia.org/wiki/Internationalized_domain_name),
+  use the punycode equivalent as the locale used inside the controller might not
+  be compatible with your locale.
 
 ### Use case limitations
 
