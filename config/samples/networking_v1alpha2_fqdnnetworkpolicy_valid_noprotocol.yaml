@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: networking.gke.io/v1alpha1
+apiVersion: networking.gke.io/v1alpha2
 kind: FQDNNetworkPolicy
 metadata:
-  name: fqdnnetworkpolicy-valid-brokenfqdn
+  name: fqdnnetworkpolicy-valid-noprotocol
 spec:
   podSelector: {}
   egress:
     - to:
       - fqdns:
-        - foo.bar.notld
+        - github.com
+        - gitlab.com
       ports:
       - port: 443
-        protocol: TCP
+        protocol: ""

@@ -38,7 +38,7 @@ import (
 	"testing"
 	"time"
 
-	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
 
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -152,7 +152,7 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 		})
 		Context("with a non-existent FQDN", func() {
 			ctx := context.Background()
-			fqdnNetworkPolicy := networkingv1alpha1.FQDNNetworkPolicy{}
+			fqdnNetworkPolicy := networkingv1alpha2.FQDNNetworkPolicy{}
 			fqdnNetworkPolicy.GetValidNonExistentFQDNResource()
 			fqdnNetworkPolicy.Namespace = "default"
 			nn := types.NamespacedName{
@@ -194,7 +194,7 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
 				time.Sleep(TIMEOUT)
 				Expect(k8sClient.Get(ctx, nn, &fqdnNetworkPolicy)).Should(Succeed())
-				if fqdnNetworkPolicy.Status.State != networkingv1alpha1.PendingState {
+				if fqdnNetworkPolicy.Status.State != networkingv1alpha2.PendingState {
 					Fail("FQDNNetworkPolicy should be in pending state. " +
 						"State: " + string(fqdnNetworkPolicy.Status.State) + ", " +
 						"Reason: " + string(fqdnNetworkPolicy.Status.Reason))
@@ -222,7 +222,7 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
 				time.Sleep(TIMEOUT)
 				Expect(k8sClient.Get(ctx, nn, &fqdnNetworkPolicy)).Should(Succeed())
-				if fqdnNetworkPolicy.Status.State != networkingv1alpha1.ActiveState {
+				if fqdnNetworkPolicy.Status.State != networkingv1alpha2.ActiveState {
 					Fail("FQDNNetworkPolicy should be in active state. " +
 						"State: " + string(fqdnNetworkPolicy.Status.State) + ", " +
 						"Reason: " + string(fqdnNetworkPolicy.Status.Reason))
@@ -286,8 +286,8 @@ func TestRemoveString(t *testing.T) {
 	}
 }
 
-func getFQDNNetworkPolicy(name string, namespace string) networkingv1alpha1.FQDNNetworkPolicy {
-	fqdnNetworkPolicy := networkingv1alpha1.FQDNNetworkPolicy{}
+func getFQDNNetworkPolicy(name string, namespace string) networkingv1alpha2.FQDNNetworkPolicy {
+	fqdnNetworkPolicy := networkingv1alpha2.FQDNNetworkPolicy{}
 	fqdnNetworkPolicy.GetValidResource()
 	fqdnNetworkPolicy.Name = name
 	fqdnNetworkPolicy.Namespace = namespace

@@ -28,10 +28,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	networking "k8s.io/api/networking/v1"
+	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -55,8 +56,10 @@ type FQDNNetworkPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	PodSelector metav1.LabelSelector          `json:"podSelector"`
-	Egress      []FQDNNetworkPolicyEgressRule `json:"egress"`
+	PodSelector metav1.LabelSelector           `json:"podSelector" protobuf:"bytes,1,opt,name=podSelector"`
+	Ingress     []FQDNNetworkPolicyIngressRule `json:"ingress,omitempty" protobuf:"bytes,2,rep,name=ingress"`
+	Egress      []FQDNNetworkPolicyEgressRule  `json:"egress,omitempty" protobuf:"bytes,3,rep,name=egress"`
+	PolicyTypes []v1.PolicyType                `json:"policyTypes,omitempty" protobuf:"bytes,4,rep,name=policyTypes,casttype=PolicyType"`
 }
 
 // FQDNNetworkPolicyStatus defines the observed state of FQDNNetworkPolicy
@@ -97,6 +100,15 @@ type FQDNNetworkPolicyList struct {
 type FQDNNetworkPolicyEgressRule struct {
 	Ports []networking.NetworkPolicyPort `json:"ports,omitempty"`
 	To    []FQDNNetworkPolicyPeer        `json:"to"`
+}
+
+// FQDNNetworkPolicyIngressRule describes a particular set of
+// traffic that is allowed into pods matched by a
+// FQDNNetworkPolicySpec's podSelector. The traffic must match
+// both ports and from.
+type FQDNNetworkPolicyIngressRule struct {
+	Ports []networking.NetworkPolicyPort `json:"ports,omitempty"`
+	From  []FQDNNetworkPolicyPeer        `json:"from"`
 }
 
 // FQDNNetworkPolicyPeer represents a FQDN that the

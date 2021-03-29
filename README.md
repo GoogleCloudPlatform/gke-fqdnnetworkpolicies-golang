@@ -13,7 +13,7 @@ A FQDNNetworkPolicy looks a lot like a NetworkPolicy, but you can configure host
 in the "to" field:
 
 ```
-apiVersion: networking.gke.io/v1alpha1
+apiVersion: networking.gke.io/v1alpha2
 kind: FQDNNetworkPolicy
 metadata:
   name: example
@@ -60,7 +60,6 @@ NetworkPolicy.
 
 There are a few functional limitations to FQDNNetworkPolicies:
 
-* Only *egress* rules are supported.
 * Only *hostnames* are supported. In particular, you can't configure a FQDNNetworkPolicy with:
   * IP addresses or CIDR blocks. Use NetworkPolicies directly for that.
   * wildcard hostnames like `*.example.com`.
@@ -130,6 +129,13 @@ Follow these instructions to install the FQDNNetworkPolicies controller in your 
    kubectl apply -f https://storage.googleapis.com/fqdnnetworkpolicies-manifests/${VERSION}.yaml
    ```
 
+## Upgrades
+
+Upgrading in place from the `v1alpha1` API (used in the 0.1 release) to the
+`v1alpha2` (introduced in the 0.2 release) is not supported. You'll need to
+uninstall the controller, reinstall it, update your FQDNNetworkPolicies to the
+`v1alpha2` API and recreate them.
+
 ## Uninstall
 
 To uninstall the FQDNNetworkPolicies controller from your GKE cluster, delete the FQDNNetworkPolicies first,
@@ -181,8 +187,8 @@ You need the following tools installed on your development workstation.
    # In one terminal
    make follow-manager-logs
    # In another terminal
-   kubectl apply -f config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid.yaml
-   kubectl apply -f config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid.yaml
+   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid.yaml
+   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml
    ```
 
 1. Explore the Makefile for other available commands, and read the [kubebuilder book](https://book.kubebuilder.io/introduction.html).

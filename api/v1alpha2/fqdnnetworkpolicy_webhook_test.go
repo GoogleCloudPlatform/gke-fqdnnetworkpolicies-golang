@@ -28,7 +28,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"testing"
@@ -111,11 +111,11 @@ func TestValidatePorts(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_port.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_port.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid ports marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_protocol.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_protocol.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid protocol marked as valid")
 	}
@@ -134,15 +134,15 @@ func TestValidateFQDNs(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_wildcard.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_wildcard.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with wildcard marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (too long) marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (label too long) marked as valid")
 	}

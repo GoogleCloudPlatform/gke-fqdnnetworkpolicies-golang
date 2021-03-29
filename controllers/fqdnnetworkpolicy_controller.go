@@ -44,7 +44,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
 
 	networking "k8s.io/api/networking/v1"
 )
@@ -76,7 +76,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 	log := r.Log.WithValues("fqdnnetworkpolicy", req.NamespacedName)
 
 	// retrieving the FQDNNetworkPolicy on which we are working
-	fqdnNetworkPolicy := &networkingv1alpha1.FQDNNetworkPolicy{}
+	fqdnNetworkPolicy := &networkingv1alpha2.FQDNNetworkPolicy{}
 	if err := r.Get(ctx, client.ObjectKey{
 		Namespace: req.Namespace,
 		Name:      req.Name,
@@ -102,7 +102,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		}
 	} else {
 		// Our FQDNNetworkPolicy is being deleted
-		fqdnNetworkPolicy.Status.State = networkingv1alpha1.DestroyingState
+		fqdnNetworkPolicy.Status.State = networkingv1alpha2.DestroyingState
 		fqdnNetworkPolicy.Status.Reason = "Deleting NetworkPolicy"
 		if e := r.Update(ctx, fqdnNetworkPolicy); e != nil {
 			log.Error(e, "unable to update FQDNNetworkPolicy status")
@@ -133,7 +133,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 	nextSyncIn, err := r.updateNetworkPolicy(ctx, fqdnNetworkPolicy)
 	if err != nil {
 		log.Error(err, "unable to update NetworkPolicy")
-		fqdnNetworkPolicy.Status.State = networkingv1alpha1.PendingState
+		fqdnNetworkPolicy.Status.State = networkingv1alpha2.PendingState
 		fqdnNetworkPolicy.Status.Reason = err.Error()
 		n := metav1.NewTime(time.Now().Add(retry))
 		fqdnNetworkPolicy.Status.NextSyncTime = &n
@@ -156,7 +156,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, err
 	}
 
-	fqdnNetworkPolicy.Status.State = networkingv1alpha1.ActiveState
+	fqdnNetworkPolicy.Status.State = networkingv1alpha2.ActiveState
 	nextSyncTime := metav1.NewTime(time.Now().Add(*nextSyncIn))
 	fqdnNetworkPolicy.Status.NextSyncTime = &nextSyncTime
 
@@ -172,12 +172,12 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 func (r *FQDNNetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	mgr.GetFieldIndexer()
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&networkingv1alpha1.FQDNNetworkPolicy{}).
+		For(&networkingv1alpha2.FQDNNetworkPolicy{}).
 		Complete(r)
 }
 
 func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
-	fqdnNetworkPolicy *networkingv1alpha1.FQDNNetworkPolicy) (*time.Duration, error) {
+	fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) (*time.Duration, error) {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 	toCreate := false
 
@@ -240,7 +240,7 @@ func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
 
 // deleteNetworkPolicy deletes the NetworkPolicy associated with the fqdnNetworkPolicy FQDNNetworkPolicy
 func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
-	fqdnNetworkPolicy *networkingv1alpha1.FQDNNetworkPolicy) error {
+	fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) error {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 
 	// Trying to fetch an existing NetworkPolicy of the same name as our FQDNNetworkPolicy
@@ -275,7 +275,7 @@ func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
 // getNetworkPolicyEgressRules returns a slice of NetworkPolicyEgressRules based on the
 // provided slice of FQDNNetworkPolicyEgressRules, also returns when the next sync should happen
 // based on the TTL of records
-func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha1.FQDNNetworkPolicy) ([]networking.NetworkPolicyEgressRule, *time.Duration, error) {
+func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) ([]networking.NetworkPolicyEgressRule, *time.Duration, error) {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 	fer := fqdnNetworkPolicy.Spec.Egress
 	rules := []networking.NetworkPolicyEgressRule{}

@@ -34,7 +34,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -77,7 +77,7 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
 
-	err = networkingv1alpha1.AddToScheme(scheme.Scheme)
+	err = networkingv1alpha2.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme

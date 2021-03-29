@@ -28,7 +28,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"golang.org/x/net/idna"
@@ -53,7 +53,7 @@ func (r *FQDNNetworkPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:path=/mutate-networking-gke-io-v1alpha1-fqdnnetworkpolicy,mutating=true,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=create;update,versions=v1alpha1,name=mfqdnnetworkpolicy.kb.io
+// +kubebuilder:webhook:path=/mutate-networking-gke-io-v1alpha2-fqdnnetworkpolicy,mutating=true,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=create;update,versions=v1alpha2,name=mfqdnnetworkpolicy.kb.io
 
 var _ webhook.Defaulter = &FQDNNetworkPolicy{}
 
@@ -78,7 +78,7 @@ func (r *FQDNNetworkPolicy) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-networking-gke-io-v1alpha1-fqdnnetworkpolicy,mutating=false,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,versions=v1alpha1,name=vfqdnnetworkpolicy.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-networking-gke-io-v1alpha2-fqdnnetworkpolicy,mutating=false,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,versions=v1alpha2,name=vfqdnnetworkpolicy.kb.io
 
 var _ webhook.Validator = &FQDNNetworkPolicy{}
 
