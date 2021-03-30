@@ -15,12 +15,12 @@
 apiVersion: networking.gke.io/v1alpha2
 kind: FQDNNetworkPolicy
 metadata:
-  name: fqdnnetworkpolicy-valid
+  name: fqdnnetworkpolicy-valid-ingress
 spec:
   podSelector: {}
-  policyType: Egress
-  egress:
-    - to:
+  policyType: Ingress
+  ingress:
+    - from:
       - fqdns:
         - github.com
         - gitlab.com

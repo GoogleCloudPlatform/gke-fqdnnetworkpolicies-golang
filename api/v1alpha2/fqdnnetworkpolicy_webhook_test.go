@@ -40,6 +40,10 @@ func TestValidateCreate(t *testing.T) {
 		t.Error("Valid resource marked as invalid during creation")
 	}
 
+	if r.GetValidIngressResource().ValidateCreate() != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during creation")
+	}
+
 	if r.GetValidNoPortResource().ValidateCreate() != nil {
 		t.Error("Valid resource with no port marked as invalid during creation")
 	}
@@ -63,6 +67,10 @@ func TestValidateUpdate(t *testing.T) {
 		t.Error("Valid resource marked as invalid during update")
 	}
 
+	if r.GetValidIngressResource().ValidateUpdate(&ro) != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during update")
+	}
+
 	if r.GetValidNoPortResource().ValidateUpdate(&ro) != nil {
 		t.Error("Valid resource with no port marked as invalid during update")
 	}
@@ -84,6 +92,10 @@ func TestValidateDelete(t *testing.T) {
 		t.Error("Valid resource marked as invalid during deletion")
 	}
 
+	if r.GetValidIngressResource().ValidateDelete() != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during deletion")
+	}
+
 	if r.GetValidNoPortResource().ValidateDelete() != nil {
 		t.Error("Valid resource with no port marked as invalid during deletion")
 	}
@@ -103,6 +115,9 @@ func TestValidatePorts(t *testing.T) {
 
 	if r.GetValidResource().ValidatePorts() != nil {
 		t.Error("Valid resource marked as having invalid ports")
+	}
+	if r.GetValidIngressResource().ValidatePorts() != nil {
+		t.Error("Valid resource with Ingress policy marked as having invalid ports")
 	}
 	if r.GetValidNoPortResource().ValidatePorts() != nil {
 		t.Error("Valid resource with no port marked as having invalid ports")
@@ -126,6 +141,9 @@ func TestValidateFQDNs(t *testing.T) {
 
 	if r.GetValidResource().ValidateFQDNs() != nil {
 		t.Error("Valid resource marked as having invalid FQDNs")
+	}
+	if r.GetValidIngressResource().ValidateFQDNs() != nil {
+		t.Error("Valid resource with Ingress policy marked as having invalid FQDNs")
 	}
 	if r.GetValidNoPortResource().ValidatePorts() != nil {
 		t.Error("Valid resource with no port marked as having invalid ports")

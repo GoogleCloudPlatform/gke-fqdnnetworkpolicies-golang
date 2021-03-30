@@ -75,6 +75,20 @@ func (r *FQDNNetworkPolicy) Default() {
 			}
 		}
 	}
+	for ii, rule := range r.Spec.Ingress {
+		if rule.Ports != nil {
+			for ip, port := range rule.Ports {
+				if *port.Protocol == "" {
+					fqdnnetworkpolicylog.V(1).Info("No protocol set, defaulting to TCP",
+						"namespace", r.ObjectMeta.Namespace,
+						"name", r.ObjectMeta.Name,
+						"path", field.NewPath("spec").Child("ingress").
+							Index(ii).Child("ports").Index(ip).String())
+					*port.Protocol = v1.ProtocolTCP
+				}
+			}
+		}
+	}
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -150,6 +164,30 @@ func (r *FQDNNetworkPolicy) ValidatePorts() field.ErrorList {
 			}
 		}
 	}
+	for ii, rule := range r.Spec.Ingress {
+		if rule.Ports != nil {
+			for ip, port := range rule.Ports {
+				if port.Port.IntVal < 0 || port.Port.IntVal > 65535 {
+					allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("ingress").
+						Index(ii).Child("ports").Index(ip).Child("port"),
+						port.Port, "Invalid port. Must be between 0 and 65535."))
+				}
+				if port.Port.IntVal == 0 {
+					fqdnnetworkpolicylog.Info("port not set or set to 0, will match all ports",
+						"name", r.ObjectMeta.Name,
+						"namespace", r.ObjectMeta.Namespace,
+						"resource", field.NewPath("spec").Child("ingress").
+							Index(ii).Child("ports").Index(ip).Child("port").String())
+				}
+				if *port.Protocol != v1.ProtocolTCP && *port.Protocol != v1.ProtocolUDP &&
+					*port.Protocol != v1.ProtocolSCTP && *port.Protocol != "" {
+					allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("ingress").
+						Index(ii).Child("ports").Index(ip).Child("protocol"),
+						port.Port, "Invalid protocol. Must be TCP, UDP, or SCTP."))
+				}
+			}
+		}
+	}
 	if len(allErrs) == 0 {
 		return nil
 	}
@@ -171,6 +209,23 @@ func (r *FQDNNetworkPolicy) ValidateFQDNs() field.ErrorList {
 						allErrs = append(allErrs, field.Invalid(
 							field.NewPath("spec").Child("egress").Index(ie).
 								Child("to").Index(ito).Child("fqdns").Index(ifqdn),
+							fqdn, err.Error()))
+					}
+				}
+			}
+		}
+	}
+	for ii, rule := range r.Spec.Ingress {
+		if rule.From != nil {
+			for ifrom, from := range rule.From {
+				for ifqdn, fqdn := range from.FQDNs {
+					var p *idna.Profile
+					p = idna.New(idna.ValidateForRegistration())
+					_, err := p.ToASCII(fqdn)
+					if err != nil {
+						allErrs = append(allErrs, field.Invalid(
+							field.NewPath("spec").Child("egress").Index(ii).
+								Child("to").Index(ifrom).Child("fqdns").Index(ifqdn),
 							fqdn, err.Error()))
 					}
 				}

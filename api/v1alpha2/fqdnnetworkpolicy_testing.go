@@ -62,6 +62,11 @@ func (r *FQDNNetworkPolicy) GetValidResource() *FQDNNetworkPolicy {
 	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml")
 }
 
+// GetValidIngressResource returns loads a valid FQDNNetworkPolicy with an Ingress policy for testing
+func (r *FQDNNetworkPolicy) GetValidIngressResource() *FQDNNetworkPolicy {
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_ingress.yaml")
+}
+
 func (r *FQDNNetworkPolicy) GetValidNoPortResource() *FQDNNetworkPolicy {
 	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_noport.yaml")
 }
