@@ -18,7 +18,8 @@ metadata:
   name: fqdnnetworkpolicy-valid-ingress
 spec:
   podSelector: {}
-  policyType: Ingress
+  policyTypes:
+    - Ingress
   ingress:
     - from:
       - fqdns:
