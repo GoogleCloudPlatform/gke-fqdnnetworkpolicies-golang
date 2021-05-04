@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"testing"
@@ -38,6 +38,10 @@ func TestValidateCreate(t *testing.T) {
 	r := FQDNNetworkPolicy{}
 	if r.GetValidResource().ValidateCreate() != nil {
 		t.Error("Valid resource marked as invalid during creation")
+	}
+
+	if r.GetValidIngressResource().ValidateCreate() != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during creation")
 	}
 
 	if r.GetValidNoPortResource().ValidateCreate() != nil {
@@ -63,6 +67,10 @@ func TestValidateUpdate(t *testing.T) {
 		t.Error("Valid resource marked as invalid during update")
 	}
 
+	if r.GetValidIngressResource().ValidateUpdate(&ro) != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during update")
+	}
+
 	if r.GetValidNoPortResource().ValidateUpdate(&ro) != nil {
 		t.Error("Valid resource with no port marked as invalid during update")
 	}
@@ -82,6 +90,10 @@ func TestValidateDelete(t *testing.T) {
 
 	if r.GetValidResource().ValidateDelete() != nil {
 		t.Error("Valid resource marked as invalid during deletion")
+	}
+
+	if r.GetValidIngressResource().ValidateDelete() != nil {
+		t.Error("Valid resource with Ingress policy marked as invalid during deletion")
 	}
 
 	if r.GetValidNoPortResource().ValidateDelete() != nil {
@@ -104,6 +116,9 @@ func TestValidatePorts(t *testing.T) {
 	if r.GetValidResource().ValidatePorts() != nil {
 		t.Error("Valid resource marked as having invalid ports")
 	}
+	if r.GetValidIngressResource().ValidatePorts() != nil {
+		t.Error("Valid resource with Ingress policy marked as having invalid ports")
+	}
 	if r.GetValidNoPortResource().ValidatePorts() != nil {
 		t.Error("Valid resource with no port marked as having invalid ports")
 	}
@@ -111,11 +126,11 @@ func TestValidatePorts(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_port.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_port.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid ports marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_protocol.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_protocol.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid protocol marked as valid")
 	}
@@ -127,6 +142,9 @@ func TestValidateFQDNs(t *testing.T) {
 	if r.GetValidResource().ValidateFQDNs() != nil {
 		t.Error("Valid resource marked as having invalid FQDNs")
 	}
+	if r.GetValidIngressResource().ValidateFQDNs() != nil {
+		t.Error("Valid resource with Ingress policy marked as having invalid FQDNs")
+	}
 	if r.GetValidNoPortResource().ValidatePorts() != nil {
 		t.Error("Valid resource with no port marked as having invalid ports")
 	}
@@ -134,15 +152,15 @@ func TestValidateFQDNs(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_wildcard.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_wildcard.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with wildcard marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (too long) marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (label too long) marked as valid")
 	}

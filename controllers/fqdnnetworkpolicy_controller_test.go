@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 	"testing"
 	"time"
 
-	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
 
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -51,7 +51,7 @@ import (
 )
 
 const (
-	TIMEOUT      = time.Millisecond * time.Duration(2000)
+	TIMEOUT      = time.Millisecond * time.Duration(3000)
 	POLLINTERVAL = time.Millisecond * time.Duration(200)
 )
 
@@ -150,9 +150,106 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				}).ShouldNot(Succeed())
 			})
 		})
+		Context("with an Ingress policy", func() {
+			ctx := context.Background()
+			fqdnNetworkPolicy := networkingv1alpha2.FQDNNetworkPolicy{}
+			fqdnNetworkPolicy.GetValidIngressResource()
+			fqdnNetworkPolicy.Namespace = "default"
+			nn := types.NamespacedName{
+				Namespace: fqdnNetworkPolicy.Namespace,
+				Name:      fqdnNetworkPolicy.Name,
+			}
+			It("Should create a NetworkPolicy of the same name with an Ingress rule with the correct CIDRs", func() {
+				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
+				Eventually(func() error {
+					r := net.Resolver{}
+					// computing the expected IPs in the NetworkPolicy
+					// from the FQDNs in the FQDNNetworkPolicy
+					// We use a different lib for resolving than the one in the main code
+					expectedIPs := []string{}
+					for _, fir := range fqdnNetworkPolicy.Spec.Ingress {
+						for _, from := range fir.From {
+							for _, fqdn := range from.FQDNs {
+								ip4s, err := r.LookupIP(ctx, "ip4", fqdn)
+								if err != nil {
+									continuing := false
+									derr, ok := err.(*net.DNSError)
+									if ok && derr.IsNotFound {
+										continuing = true
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continuing = true
+									}
+									if !continuing {
+										return err
+									}
+								}
+								for _, ip := range ip4s {
+									expectedIPs = append(expectedIPs, ip.String()+"/32")
+								}
+								ip6s, err := r.LookupIP(ctx, "ip6", fqdn)
+								if err != nil {
+									continuing := false
+									derr, ok := err.(*net.DNSError)
+									if ok && derr.IsNotFound {
+										continuing = true
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continuing = true
+									}
+									if !continuing {
+										return err
+									}
+								}
+								for _, ip := range ip6s {
+									expectedIPs = append(expectedIPs, ip.String()+"/128")
+								}
+							}
+						}
+					}
+					// Getting the NetworkPolicy
+					networkPolicy := networking.NetworkPolicy{}
+					err := k8sClient.Get(ctx, nn, &networkPolicy)
+					if err != nil {
+						return err
+					}
+					if len(networkPolicy.Spec.PolicyTypes) != 1 ||
+						networkPolicy.Spec.PolicyTypes[0] != networking.PolicyTypeIngress {
+						return errors.New("Unexpected PolicyType: " + fmt.Sprintf("%v", networkPolicy.Spec.PolicyTypes) +
+							". Expected PolicyType: [Ingress]")
+					}
+					total := 0
+					for _, ingressRule := range networkPolicy.Spec.Ingress {
+						// checking that every CIDR in the NetworkPolicy
+						// is in the expect list of IPs
+						total += len(ingressRule.From)
+						for _, from := range ingressRule.From {
+							// removing the /32 at the end of the CIDR
+							if !containsString(expectedIPs, string(from.IPBlock.CIDR)) {
+								return errors.New("Unexpected IP in NetworkPolicy: " + string(from.IPBlock.CIDR) +
+									". Expected IPs: " + fmt.Sprint(expectedIPs))
+							}
+						}
+					}
+					if total != len(expectedIPs) {
+						return errors.New("Some expected IPs are not present in the NetworkPolicy")
+					}
+					return nil
+				}).Should(Succeed())
+			})
+			It("Should delete the NetworkPolicy when it's deleted", func() {
+				Expect(k8sClient.Delete(ctx, &fqdnNetworkPolicy)).Should(Succeed())
+				Eventually(func() error {
+					networkPolicy := networking.NetworkPolicy{}
+					return k8sClient.Get(ctx, nn, &networkPolicy)
+				}).ShouldNot(Succeed())
+			})
+		})
 		Context("with a non-existent FQDN", func() {
 			ctx := context.Background()
-			fqdnNetworkPolicy := networkingv1alpha1.FQDNNetworkPolicy{}
+			fqdnNetworkPolicy := networkingv1alpha2.FQDNNetworkPolicy{}
 			fqdnNetworkPolicy.GetValidNonExistentFQDNResource()
 			fqdnNetworkPolicy.Namespace = "default"
 			nn := types.NamespacedName{
@@ -194,7 +291,7 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
 				time.Sleep(TIMEOUT)
 				Expect(k8sClient.Get(ctx, nn, &fqdnNetworkPolicy)).Should(Succeed())
-				if fqdnNetworkPolicy.Status.State != networkingv1alpha1.PendingState {
+				if fqdnNetworkPolicy.Status.State != networkingv1alpha2.PendingState {
 					Fail("FQDNNetworkPolicy should be in pending state. " +
 						"State: " + string(fqdnNetworkPolicy.Status.State) + ", " +
 						"Reason: " + string(fqdnNetworkPolicy.Status.Reason))
@@ -222,7 +319,7 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
 				time.Sleep(TIMEOUT)
 				Expect(k8sClient.Get(ctx, nn, &fqdnNetworkPolicy)).Should(Succeed())
-				if fqdnNetworkPolicy.Status.State != networkingv1alpha1.ActiveState {
+				if fqdnNetworkPolicy.Status.State != networkingv1alpha2.ActiveState {
 					Fail("FQDNNetworkPolicy should be in active state. " +
 						"State: " + string(fqdnNetworkPolicy.Status.State) + ", " +
 						"Reason: " + string(fqdnNetworkPolicy.Status.Reason))
@@ -286,8 +383,8 @@ func TestRemoveString(t *testing.T) {
 	}
 }
 
-func getFQDNNetworkPolicy(name string, namespace string) networkingv1alpha1.FQDNNetworkPolicy {
-	fqdnNetworkPolicy := networkingv1alpha1.FQDNNetworkPolicy{}
+func getFQDNNetworkPolicy(name string, namespace string) networkingv1alpha2.FQDNNetworkPolicy {
+	fqdnNetworkPolicy := networkingv1alpha2.FQDNNetworkPolicy{}
 	fqdnNetworkPolicy.GetValidResource()
 	fqdnNetworkPolicy.Name = name
 	fqdnNetworkPolicy.Namespace = namespace

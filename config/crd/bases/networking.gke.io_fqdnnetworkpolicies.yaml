@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,6 +90,48 @@ spec:
                 - to
                 type: object
               type: array
+            ingress:
+              items:
+                description: FQDNNetworkPolicyIngressRule describes a particular set
+                  of traffic that is allowed into pods matched by a FQDNNetworkPolicySpec's
+                  podSelector. The traffic must match both ports and from.
+                properties:
+                  from:
+                    items:
+                      description: FQDNNetworkPolicyPeer represents a FQDN that the
+                        FQDNNetworkPolicy allows connections to.
+                      properties:
+                        fqdns:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - fqdns
+                      type: object
+                    type: array
+                  ports:
+                    items:
+                      description: NetworkPolicyPort describes a port to allow traffic
+                        on
+                      properties:
+                        port:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: The port on the given protocol. This can either
+                            be a numerical or named port on a pod. If this field is
+                            not provided, this matches all port names and numbers.
+                          x-kubernetes-int-or-string: true
+                        protocol:
+                          description: The protocol (TCP, UDP, or SCTP) which traffic
+                            must match. If not specified, this field defaults to TCP.
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - from
+                type: object
+              type: array
             podSelector:
               description: A label selector is a label query over a set of resources.
                 The result of matchLabels and matchExpressions are ANDed. An empty
@@ -136,8 +178,13 @@ spec:
                     are ANDed.
                   type: object
               type: object
+            policyTypes:
+              items:
+                description: Policy Type string describes the NetworkPolicy type This
+                  type is beta-level in 1.8
+                type: string
+              type: array
           required:
-          - egress
           - podSelector
           type: object
         status:
@@ -158,9 +205,9 @@ spec:
           - state
           type: object
       type: object
-  version: v1alpha1
+  version: v1alpha2
   versions:
-  - name: v1alpha1
+  - name: v1alpha2
     served: true
     storage: true
 status:

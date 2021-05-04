@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	networkingv1alpha1 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha1"
+	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
 	"github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/controllers"
 	// +kubebuilder:scaffold:imports
 )
@@ -53,7 +53,7 @@ var (
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
-	_ = networkingv1alpha1.AddToScheme(scheme)
+	_ = networkingv1alpha2.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -93,7 +93,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "FQDNNetworkPolicy")
 		os.Exit(1)
 	}
-	if err = (&networkingv1alpha1.FQDNNetworkPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&networkingv1alpha2.FQDNNetworkPolicy{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "FQDNNetworkPolicy")
 		os.Exit(1)
 	}

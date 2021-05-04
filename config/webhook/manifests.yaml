@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-networking-gke-io-v1alpha1-fqdnnetworkpolicy
+      path: /mutate-networking-gke-io-v1alpha2-fqdnnetworkpolicy
   failurePolicy: Fail
   name: mfqdnnetworkpolicy.kb.io
   rules:
   - apiGroups:
     - networking.gke.io
     apiVersions:
-    - v1alpha1
+    - v1alpha2
     operations:
     - CREATE
     - UPDATE
@@ -51,14 +51,14 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-networking-gke-io-v1alpha1-fqdnnetworkpolicy
+      path: /validate-networking-gke-io-v1alpha2-fqdnnetworkpolicy
   failurePolicy: Fail
   name: vfqdnnetworkpolicy.kb.io
   rules:
   - apiGroups:
     - networking.gke.io
     apiVersions:
-    - v1alpha1
+    - v1alpha2
     operations:
     - CREATE
     - UPDATE

@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"io/ioutil"
@@ -59,21 +59,26 @@ func (r *FQDNNetworkPolicy) LoadResource(path string) *FQDNNetworkPolicy {
 
 // GetValidResource returns loads a valid FQDNNetworkPolicy for testing
 func (r *FQDNNetworkPolicy) GetValidResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml")
+}
+
+// GetValidIngressResource returns loads a valid FQDNNetworkPolicy with an Ingress policy for testing
+func (r *FQDNNetworkPolicy) GetValidIngressResource() *FQDNNetworkPolicy {
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_ingress.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNoPortResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid_noport.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_noport.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNoProtocolResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid_noprotocol.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_noprotocol.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNonExistentFQDNResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetInvalidResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha1_fqdnnetworkpolicy_invalid.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid.yaml")
 }
