@@ -18,7 +18,8 @@ metadata:
   name: fqdnnetworkpolicy-valid
 spec:
   podSelector: {}
-  policyType: Egress
+  policyTypes:
+  - Egress
   egress:
     - to:
       - fqdns:

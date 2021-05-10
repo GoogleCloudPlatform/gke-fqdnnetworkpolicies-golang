@@ -123,6 +123,11 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 					if err != nil {
 						return err
 					}
+					if len(networkPolicy.Spec.PolicyTypes) != 1 ||
+						networkPolicy.Spec.PolicyTypes[0] != networking.PolicyTypeEgress {
+						return errors.New("Unexpected PolicyType: " + fmt.Sprintf("%v", networkPolicy.Spec.PolicyTypes) +
+							". Expected PolicyType: [Egress]")
+					}
 					total := 0
 					for _, egressRule := range networkPolicy.Spec.Egress {
 						// checking that every CIDR in the NetworkPolicy
