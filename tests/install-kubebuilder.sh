@@ -23,6 +23,6 @@ os=$(go env GOOS)
 arch=$(go env GOARCH)
 
 # download kubebuilder and extract it to tmp
-wget --quiet -O - https://go.kubebuilder.io/dl/${version}/${os}/${arch} | tar -xz -C /tmp
+wget --quiet -O - https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${os}_${arch}.tar.gz | tar -xz -C /tmp
 
 mv /tmp/kubebuilder_${version}_${os}_${arch}/bin ${target}
