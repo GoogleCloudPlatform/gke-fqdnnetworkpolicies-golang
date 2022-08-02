@@ -136,6 +136,11 @@ Upgrading in place from the `v1alpha1` API (used in the 0.1 release) to the
 uninstall the controller, reinstall it, update your FQDNNetworkPolicies to the
 `v1alpha2` API and recreate them.
 
+In the same manner, upgrading in place from the `v1alpha2` API (used in the 0.2 release) to the
+`v1alpha3` (introduced in the 0.3 release) is not supported. You'll need to
+uninstall the controller, reinstall it, update your FQDNNetworkPolicies to the
+`v1alpha3` API and recreate them.
+
 ## Uninstall
 
 To uninstall the FQDNNetworkPolicies controller from your GKE cluster, delete the FQDNNetworkPolicies first,
