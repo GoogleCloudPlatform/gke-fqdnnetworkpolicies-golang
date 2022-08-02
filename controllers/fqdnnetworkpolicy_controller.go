@@ -1,19 +1,5 @@
-// Copyright 2021 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /*
-
+Copyright 2022 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,16 +22,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/miekg/dns"
-
-	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	networkingv1alpha2 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha2"
+	networkingv1alpha3 "github.com/GoogleCloudPlatform/gke-fqdnnetworkpolicies-golang/api/v1alpha3"
+	"github.com/go-logr/logr"
 
+	"github.com/miekg/dns"
 	networking "k8s.io/api/networking/v1"
 )
 
@@ -64,19 +50,28 @@ var (
 	retry = time.Second * time.Duration(10)
 )
 
-// +kubebuilder:rbac:groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=networking.gke.io,resources=fqdnnetworkpolicies/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=networking.gke.io,resources=fqdnnetworkpolicies/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=networking.gke.io,resources=fqdnnetworkpolicies/finalizers,verbs=update
+//+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies/status,verbs=get;update;patch
 
-// Reconcile is reconciling a FQDNNetworkPolicy. It's run when there is a notification
-// for a FQDNNetworkPolicy or after a given requeue time.
-func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+// TODO(user): Modify the Reconcile function to compare the state specified by
+// the FQDNNetworkPolicy object against the actual cluster state, and then
+// perform operations to make the cluster state reflect the state specified by
+// the user.
+//
+// For more details, check Reconcile and its Result here:
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
+func (r *FQDNNetworkPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	_ = log.FromContext(ctx)
 	log := r.Log.WithValues("fqdnnetworkpolicy", req.NamespacedName)
 
+	// TODO(user): your logic here
 	// retrieving the FQDNNetworkPolicy on which we are working
-	fqdnNetworkPolicy := &networkingv1alpha2.FQDNNetworkPolicy{}
+	fqdnNetworkPolicy := &networkingv1alpha3.FQDNNetworkPolicy{}
 	if err := r.Get(ctx, client.ObjectKey{
 		Namespace: req.Namespace,
 		Name:      req.Name,
@@ -102,7 +97,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		}
 	} else {
 		// Our FQDNNetworkPolicy is being deleted
-		fqdnNetworkPolicy.Status.State = networkingv1alpha2.DestroyingState
+		fqdnNetworkPolicy.Status.State = networkingv1alpha3.DestroyingState
 		fqdnNetworkPolicy.Status.Reason = "Deleting NetworkPolicy"
 		if e := r.Update(ctx, fqdnNetworkPolicy); e != nil {
 			log.Error(e, "unable to update FQDNNetworkPolicy status")
@@ -133,7 +128,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 	nextSyncIn, err := r.updateNetworkPolicy(ctx, fqdnNetworkPolicy)
 	if err != nil {
 		log.Error(err, "unable to update NetworkPolicy")
-		fqdnNetworkPolicy.Status.State = networkingv1alpha2.PendingState
+		fqdnNetworkPolicy.Status.State = networkingv1alpha3.PendingState
 		fqdnNetworkPolicy.Status.Reason = err.Error()
 		n := metav1.NewTime(time.Now().Add(retry))
 		fqdnNetworkPolicy.Status.NextSyncTime = &n
@@ -156,7 +151,7 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, err
 	}
 
-	fqdnNetworkPolicy.Status.State = networkingv1alpha2.ActiveState
+	fqdnNetworkPolicy.Status.State = networkingv1alpha3.ActiveState
 	nextSyncTime := metav1.NewTime(time.Now().Add(*nextSyncIn))
 	fqdnNetworkPolicy.Status.NextSyncTime = &nextSyncTime
 
@@ -169,15 +164,16 @@ func (r *FQDNNetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 	return ctrl.Result{RequeueAfter: *nextSyncIn}, nil
 }
 
+// SetupWithManager sets up the controller with the Manager.
 func (r *FQDNNetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	mgr.GetFieldIndexer()
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&networkingv1alpha2.FQDNNetworkPolicy{}).
+		For(&networkingv1alpha3.FQDNNetworkPolicy{}).
 		Complete(r)
 }
 
 func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
-	fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) (*time.Duration, error) {
+	fqdnNetworkPolicy *networkingv1alpha3.FQDNNetworkPolicy) (*time.Duration, error) {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 	toCreate := false
 
@@ -251,7 +247,7 @@ func (r *FQDNNetworkPolicyReconciler) updateNetworkPolicy(ctx context.Context,
 
 // deleteNetworkPolicy deletes the NetworkPolicy associated with the fqdnNetworkPolicy FQDNNetworkPolicy
 func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
-	fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) error {
+	fqdnNetworkPolicy *networkingv1alpha3.FQDNNetworkPolicy) error {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 
 	// Trying to fetch an existing NetworkPolicy of the same name as our FQDNNetworkPolicy
@@ -286,7 +282,7 @@ func (r *FQDNNetworkPolicyReconciler) deleteNetworkPolicy(ctx context.Context,
 // getNetworkPolicyIngressRules returns a slice of NetworkPolicyIngressRules based on the
 // provided slice of FQDNNetworkPolicyIngressRules, also returns when the next sync should happen
 // based on the TTL of records
-func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyIngressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) ([]networking.NetworkPolicyIngressRule, *time.Duration, error) {
+func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyIngressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha3.FQDNNetworkPolicy) ([]networking.NetworkPolicyIngressRule, *time.Duration, error) {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 	fir := fqdnNetworkPolicy.Spec.Ingress
 	rules := []networking.NetworkPolicyIngressRule{}
@@ -325,7 +321,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyIngressRules(ctx context.C
 				// by default only if options rotate is set in resolv.conf
 				// they are rotated. Otherwise the first is used, after a (5s)
 				// timeout the next etc. So this is not too bad for now.
-				r, _, err := c.Exchange(m, ns[0]+":53")
+				r, _, err := c.Exchange(m, "["+ns[0]+"]:53")
 				if err != nil {
 					log.Error(err, "unable to resolve "+f)
 					continue
@@ -358,7 +354,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyIngressRules(ctx context.C
 				// by default only if options rotate is set in resolv.conf
 				// they are rotated. Otherwise the first is used, after a (5s)
 				// timeout the next etc. So this is not too bad for now.
-				r6, _, err := c.Exchange(m6, ns[0]+":53")
+				r6, _, err := c.Exchange(m6, "["+ns[0]+"]:53")
 				if err != nil {
 					log.Error(err, "unable to resolve "+f)
 					continue
@@ -407,7 +403,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyIngressRules(ctx context.C
 // getNetworkPolicyEgressRules returns a slice of NetworkPolicyEgressRules based on the
 // provided slice of FQDNNetworkPolicyEgressRules, also returns when the next sync should happen
 // based on the TTL of records
-func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha2.FQDNNetworkPolicy) ([]networking.NetworkPolicyEgressRule, *time.Duration, error) {
+func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Context, fqdnNetworkPolicy *networkingv1alpha3.FQDNNetworkPolicy) ([]networking.NetworkPolicyEgressRule, *time.Duration, error) {
 	log := r.Log.WithValues("fqdnnetworkpolicy", fqdnNetworkPolicy.Namespace+"/"+fqdnNetworkPolicy.Name)
 	fer := fqdnNetworkPolicy.Spec.Egress
 	rules := []networking.NetworkPolicyEgressRule{}
@@ -446,7 +442,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				// by default only if options rotate is set in resolv.conf
 				// they are rotated. Otherwise the first is used, after a (5s)
 				// timeout the next etc. So this is not too bad for now.
-				r, _, err := c.Exchange(m, ns[0]+":53")
+				r, _, err := c.Exchange(m, "["+ns[0]+"]:53")
 				if err != nil {
 					log.Error(err, "unable to resolve "+f)
 					continue
@@ -479,7 +475,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 				// by default only if options rotate is set in resolv.conf
 				// they are rotated. Otherwise the first is used, after a (5s)
 				// timeout the next etc. So this is not too bad for now.
-				r6, _, err := c.Exchange(m6, ns[0]+":53")
+				r6, _, err := c.Exchange(m6, "["+ns[0]+"]:53")
 				if err != nil {
 					log.Error(err, "unable to resolve "+f)
 					continue
