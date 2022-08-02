@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 set -e
 set -x
 
-version=${KUBEBUILDER_VERSION:-2.3.1}
+version=${KUBEBUILDER_VERSION:-3.5.0}
 target=${KUBEBUILDER_ASSETS:-/kubebuilder/bin}
 os=$(go env GOOS)
 arch=$(go env GOARCH)
