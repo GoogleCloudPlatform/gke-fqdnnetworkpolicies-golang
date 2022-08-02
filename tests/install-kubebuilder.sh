@@ -25,4 +25,4 @@ arch=$(go env GOARCH)
 # download kubebuilder and extract it to tmp
 wget --quiet -c https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${os}_${arch} -P /tmp
 
-mv /tmp/kubebuilder_${os}_${arch}/bin ${target}
+mv /tmp/kubebuilder_${os}_${arch} ${target}
