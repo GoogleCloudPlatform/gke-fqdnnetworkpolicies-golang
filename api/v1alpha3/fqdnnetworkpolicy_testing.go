@@ -1,19 +1,5 @@
-// Copyright 2021 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /*
-
+Copyright 2022 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	"io/ioutil"
@@ -59,26 +45,26 @@ func (r *FQDNNetworkPolicy) LoadResource(path string) *FQDNNetworkPolicy {
 
 // GetValidResource returns loads a valid FQDNNetworkPolicy for testing
 func (r *FQDNNetworkPolicy) GetValidResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid.yaml")
 }
 
 // GetValidIngressResource returns loads a valid FQDNNetworkPolicy with an Ingress policy for testing
 func (r *FQDNNetworkPolicy) GetValidIngressResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_ingress.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_ingress.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNoPortResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_noport.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_noport.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNoProtocolResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_noprotocol.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_noprotocol.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetValidNonExistentFQDNResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
 }
 
 func (r *FQDNNetworkPolicy) GetInvalidResource() *FQDNNetworkPolicy {
-	return r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid.yaml")
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid.yaml")
 }
