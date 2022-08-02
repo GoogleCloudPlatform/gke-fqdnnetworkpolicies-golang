@@ -13,7 +13,7 @@ A FQDNNetworkPolicy looks a lot like a NetworkPolicy, but you can configure host
 in the "to" field:
 
 ```
-apiVersion: networking.gke.io/v1alpha2
+apiVersion: networking.gke.io/v1alpha3
 kind: FQDNNetworkPolicy
 metadata:
   name: example
@@ -187,8 +187,8 @@ You need the following tools installed on your development workstation.
    # In one terminal
    make follow-manager-logs
    # In another terminal
-   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid.yaml
-   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml
+   kubectl apply -f config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid.yaml
+   kubectl apply -f config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid.yaml
    ```
 
 1. Explore the Makefile for other available commands, and read the [kubebuilder book](https://book.kubebuilder.io/introduction.html).
