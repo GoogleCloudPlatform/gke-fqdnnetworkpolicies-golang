@@ -41,6 +41,5 @@ options:
   - name: kubebuilder
     path: /kubebuilder
   env:
-  - GO111MODULE=on
-  - KUBEBUILDER_VERSION=3.5.0
-  - KUBEBUILDER_ASSETS=/kubebuilder/bin
+  - K8S_VERSION=1.24.1
+  - KUBEBUILDER_ASSETS=/kubebuilder
