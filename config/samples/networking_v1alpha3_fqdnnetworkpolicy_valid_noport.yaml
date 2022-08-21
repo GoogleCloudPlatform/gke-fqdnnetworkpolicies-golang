@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: networking.gke.io/v1alpha2
+apiVersion: networking.gke.io/v1alpha3
 kind: FQDNNetworkPolicy
 metadata:
-  name: fqdnnetworkpolicy-invalid-labeltoolong
+  name: fqdnnetworkpolicy-valid-noport
 spec:
   podSelector: {}
   egress:
@@ -23,7 +23,5 @@ spec:
       - fqdns:
         - github.com
         - gitlab.com
-        - abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz.com
       ports:
-      - port: 443
-        protocol: TCP
+      - protocol: TCP

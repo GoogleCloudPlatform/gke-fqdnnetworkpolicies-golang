@@ -1,19 +1,5 @@
-// Copyright 2021 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /*
-
+Copyright 2022 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	"testing"
@@ -126,11 +112,11 @@ func TestValidatePorts(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_port.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid_port.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid ports marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_protocol.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid_protocol.yaml")
 	if r.ValidatePorts() == nil {
 		t.Error("Resource with invalid protocol marked as valid")
 	}
@@ -152,15 +138,15 @@ func TestValidateFQDNs(t *testing.T) {
 		t.Error("Valid resource with no protocol marked as having invalid ports")
 	}
 
-	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_wildcard.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid_wildcard.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with wildcard marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid_fqdntoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (too long) marked as valid")
 	}
-	r.LoadResource("./config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
+	r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid_labeltoolong.yaml")
 	if r.ValidateFQDNs() == nil {
 		t.Error("Resource with invalid FQDN (label too long) marked as valid")
 	}

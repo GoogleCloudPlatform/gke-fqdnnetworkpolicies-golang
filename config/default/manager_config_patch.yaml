@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-apiVersion: networking.gke.io/v1alpha2
-kind: FQDNNetworkPolicy
+---
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: fqdnnetworkpolicy-valid-noprotocol
+  name: controller-manager
+  namespace: system
 spec:
-  podSelector: {}
-  egress:
-    - to:
-      - fqdns:
-        - github.com
-        - gitlab.com
-      ports:
-      - port: 443
-        protocol: ""
+  template:
+    spec:
+      containers:
+      - name: manager
+        args:
+        - "--config=controller_manager_config.yaml"
+        volumeMounts:
+        - name: manager-config
+          mountPath: /controller_manager_config.yaml
+          subPath: controller_manager_config.yaml
+      volumes:
+      - name: manager-config
+        configMap:
+          name: manager-config

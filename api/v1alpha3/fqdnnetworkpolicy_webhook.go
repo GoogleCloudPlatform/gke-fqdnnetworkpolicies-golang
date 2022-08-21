@@ -1,19 +1,5 @@
-// Copyright 2021 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /*
-
+Copyright 2022 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	"golang.org/x/net/idna"
@@ -43,7 +29,7 @@ import (
 )
 
 // log is for logging in this package.
-var fqdnnetworkpolicylog = logf.Log.WithName("fqdnnetworkpolicy-webhook")
+var fqdnnetworkpolicylog = logf.Log.WithName("fqdnnetworkpolicy-resource")
 
 func (r *FQDNNetworkPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -51,16 +37,17 @@ func (r *FQDNNetworkPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:path=/mutate-networking-gke-io-v1alpha2-fqdnnetworkpolicy,mutating=true,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=create;update,versions=v1alpha2,name=mfqdnnetworkpolicy.kb.io
+//+kubebuilder:webhook:path=/mutate-networking-gke-io-v1alpha3-fqdnnetworkpolicy,mutating=true,failurePolicy=fail,sideEffects=None,groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=create;update,versions=v1alpha3,name=mfqdnnetworkpolicy.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &FQDNNetworkPolicy{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) Default() {
-	fqdnnetworkpolicylog.V(1).Info("Setting defaults on incoming resource", "name", r.Name)
+	fqdnnetworkpolicylog.Info("default", "name", r.Name)
 
+	// TODO(user): fill in your defaulting logic.
 	for ie, rule := range r.Spec.Egress {
 		if rule.Ports != nil {
 			for ip, port := range rule.Ports {
@@ -92,14 +79,15 @@ func (r *FQDNNetworkPolicy) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-networking-gke-io-v1alpha2-fqdnnetworkpolicy,mutating=false,failurePolicy=fail,groups=networking.gke.io,resources=fqdnnetworkpolicies,versions=v1alpha2,name=vfqdnnetworkpolicy.kb.io
+//+kubebuilder:webhook:path=/validate-networking-gke-io-v1alpha3-fqdnnetworkpolicy,mutating=false,failurePolicy=fail,sideEffects=None,groups=networking.gke.io,resources=fqdnnetworkpolicies,verbs=create;update,versions=v1alpha3,name=vfqdnnetworkpolicy.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &FQDNNetworkPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) ValidateCreate() error {
-	fqdnnetworkpolicylog.V(1).Info("validate create", "name", r.Name)
+	fqdnnetworkpolicylog.Info("validate create", "name", r.Name)
 
+	// TODO(user): fill in your validation logic upon object creation.
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, r.ValidatePorts()...)
 	allErrs = append(allErrs, r.ValidateFQDNs()...)
@@ -114,8 +102,9 @@ func (r *FQDNNetworkPolicy) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *FQDNNetworkPolicy) ValidateUpdate(old runtime.Object) error {
-	fqdnnetworkpolicylog.V(1).Info("validate update", "name", r.Name)
+	fqdnnetworkpolicylog.Info("validate update", "name", r.Name)
 
+	// TODO(user): fill in your validation logic upon object update.
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, r.ValidatePorts()...)
 	allErrs = append(allErrs, r.ValidateFQDNs()...)

@@ -13,7 +13,7 @@ A FQDNNetworkPolicy looks a lot like a NetworkPolicy, but you can configure host
 in the "to" field:
 
 ```
-apiVersion: networking.gke.io/v1alpha2
+apiVersion: networking.gke.io/v1alpha3
 kind: FQDNNetworkPolicy
 metadata:
   name: example
@@ -136,6 +136,11 @@ Upgrading in place from the `v1alpha1` API (used in the 0.1 release) to the
 uninstall the controller, reinstall it, update your FQDNNetworkPolicies to the
 `v1alpha2` API and recreate them.
 
+In the same manner, upgrading in place from the `v1alpha2` API (used in the 0.2 release) to the
+`v1alpha3` (introduced in the 0.3 release) is not supported. You'll need to
+uninstall the controller, reinstall it, update your FQDNNetworkPolicies to the
+`v1alpha3` API and recreate them.
+
 ## Uninstall
 
 To uninstall the FQDNNetworkPolicies controller from your GKE cluster, delete the FQDNNetworkPolicies first,
@@ -159,7 +164,7 @@ You need the following tools installed on your development workstation.
 * kubectl
 * Kind
 * kustomize
-* kubebuilder (2.3.1, you may need to export the [KUBEBUILDER_ASSET variable](https://book.kubebuilder.io/quick-start.html))
+* kubebuilder (3.5.0, you may need to export the [KUBEBUILDER_ASSET variable](https://book.kubebuilder.io/quick-start.html))
 
 ### Building and running locally
 
@@ -187,8 +192,8 @@ You need the following tools installed on your development workstation.
    # In one terminal
    make follow-manager-logs
    # In another terminal
-   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_invalid.yaml
-   kubectl apply -f config/samples/networking_v1alpha2_fqdnnetworkpolicy_valid.yaml
+   kubectl apply -f config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid.yaml
+   kubectl apply -f config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid.yaml
    ```
 
 1. Explore the Makefile for other available commands, and read the [kubebuilder book](https://book.kubebuilder.io/introduction.html).

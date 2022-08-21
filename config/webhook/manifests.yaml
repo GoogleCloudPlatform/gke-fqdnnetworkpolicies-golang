@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,56 +11,57 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   creationTimestamp: null
   name: mutating-webhook-configuration
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions:
+  - v1
+  clientConfig:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-networking-gke-io-v1alpha2-fqdnnetworkpolicy
+      path: /mutate-networking-gke-io-v1alpha3-fqdnnetworkpolicy
   failurePolicy: Fail
   name: mfqdnnetworkpolicy.kb.io
   rules:
   - apiGroups:
     - networking.gke.io
     apiVersions:
-    - v1alpha2
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE
     resources:
     - fqdnnetworkpolicies
-
+  sideEffects: None
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions:
+  - v1
+  clientConfig:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-networking-gke-io-v1alpha2-fqdnnetworkpolicy
+      path: /validate-networking-gke-io-v1alpha3-fqdnnetworkpolicy
   failurePolicy: Fail
   name: vfqdnnetworkpolicy.kb.io
   rules:
   - apiGroups:
     - networking.gke.io
     apiVersions:
-    - v1alpha2
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE
     resources:
     - fqdnnetworkpolicies
+  sideEffects: None

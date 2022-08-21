@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 set -e
 set -x
 
-version=${KUBEBUILDER_VERSION:-2.3.1}
-target=${KUBEBUILDER_ASSETS:-/kubebuilder/bin}
+# Set some variables
+target=${KUBEBUILDER_ASSETS:-/kubebuilder}
+k8sversion=${K8S_VERSION:-1.24.1}
 os=$(go env GOOS)
 arch=$(go env GOARCH)
 
-# download kubebuilder and extract it to tmp
-wget --quiet -O - https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${version}/kubebuilder_${version}_${os}_${arch}.tar.gz | tar -xz -C /tmp
+mkdir -p ${target}
 
-mv /tmp/kubebuilder_${version}_${os}_${arch}/bin ${target}
+# Download and install test tools
+curl -sSLo envtest-bins.tar.gz "https://go.kubebuilder.io/test-tools/${k8sversion}/${os}/${arch}"
+tar -C ${target} --strip-components=1 -zvxf envtest-bins.tar.gz
+mv ${target}/bin/* ${target}/
