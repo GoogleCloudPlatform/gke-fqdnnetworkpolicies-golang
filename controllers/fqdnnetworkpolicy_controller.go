@@ -45,6 +45,7 @@ type FQDNNetworkPolicyReconciler struct {
 var (
 	ownerAnnotation        = "fqdnnetworkpolicies.networking.gke.io/owned-by"
 	deletePolicyAnnotation = "fqdnnetworkpolicies.networking.gke.io/delete-policy"
+	AaaaLookupsAnnotation  = "fqdnnetworkpolicies.networking.gke.io/aaaa-lookups"
 	finalizerName          = "finalizer.fqdnnetworkpolicies.networking.gke.io"
 	// TODO make retry configurable
 	retry = time.Second * time.Duration(10)
@@ -465,36 +466,39 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 						}
 					}
 				}
+				if fqdnNetworkPolicy.Annotations[AaaaLookupsAnnotation] == "skip" {
+					log.Info("NetworkPolicy has AAAA lookups policy set to skip, not resolving AAAA records")
+				} else {
+					// AAAA records
+					m6 := new(dns.Msg)
+					m6.SetQuestion(f, dns.TypeAAAA)
 
-				// AAAA records
-				m6 := new(dns.Msg)
-				m6.SetQuestion(f, dns.TypeAAAA)
-
-				// TODO: We're always using the first nameserver. Should we do
-				// something different? Note from Jens:
-				// by default only if options rotate is set in resolv.conf
-				// they are rotated. Otherwise the first is used, after a (5s)
-				// timeout the next etc. So this is not too bad for now.
-				r6, _, err := c.Exchange(m6, "["+ns[0]+"]:53")
-				if err != nil {
-					log.Error(err, "unable to resolve "+f)
-					continue
-				}
-				if len(r6.Answer) == 0 {
-					log.V(1).Info("could not find AAAA record for " + f)
-				}
-				for _, ans := range r6.Answer {
-					if t, ok := ans.(*dns.AAAA); ok {
-						// Adding a peer per answer
-						peers = append(peers, networking.NetworkPolicyPeer{
-							IPBlock: &networking.IPBlock{CIDR: t.AAAA.String() + "/128"}})
-						// We want the next sync for the FQDNNetworkPolicy to happen
-						// just after the TTL of the DNS record has expired.
-						// Because a single FQDNNetworkPolicy may have different DNS
-						// records with different TTLs, we pick the lowest one
-						// and resynchronise after that.
-						if ans.Header().Ttl < nextSync {
-							nextSync = ans.Header().Ttl
+					// TODO: We're always using the first nameserver. Should we do
+					// something different? Note from Jens:
+					// by default only if options rotate is set in resolv.conf
+					// they are rotated. Otherwise the first is used, after a (5s)
+					// timeout the next etc. So this is not too bad for now.
+					r6, _, err := c.Exchange(m6, "["+ns[0]+"]:53")
+					if err != nil {
+						log.Error(err, "unable to resolve "+f)
+						continue
+					}
+					if len(r6.Answer) == 0 {
+						log.V(1).Info("could not find AAAA record for " + f)
+					}
+					for _, ans := range r6.Answer {
+						if t, ok := ans.(*dns.AAAA); ok {
+							// Adding a peer per answer
+							peers = append(peers, networking.NetworkPolicyPeer{
+								IPBlock: &networking.IPBlock{CIDR: t.AAAA.String() + "/128"}})
+							// We want the next sync for the FQDNNetworkPolicy to happen
+							// just after the TTL of the DNS record has expired.
+							// Because a single FQDNNetworkPolicy may have different DNS
+							// records with different TTLs, we pick the lowest one
+							// and resynchronise after that.
+							if ans.Header().Ttl < nextSync {
+								nextSync = ans.Header().Ttl
+							}
 						}
 					}
 				}
