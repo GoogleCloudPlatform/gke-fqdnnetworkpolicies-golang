@@ -57,7 +57,7 @@ To prevent this behavior, set the `fqdnnetworkpolicies.networking.gke.io/delete-
 NetworkPolicy.
 
 There might be scenarios where IPv6 AAAA lookups are not desired or supported in the resulting NetworkPolicy. 
-To skip AAAA loopups set the `fqdnnetworkpolicies.networking.gke.io/aaaa-lookups` annotation to `skip`
+To skip AAAA lookups set the `fqdnnetworkpolicies.networking.gke.io/aaaa-lookups` annotation to `skip`
 
 ## Limitations
 
