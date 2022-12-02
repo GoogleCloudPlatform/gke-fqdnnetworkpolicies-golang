@@ -45,7 +45,7 @@ type FQDNNetworkPolicyReconciler struct {
 var (
 	ownerAnnotation        = "fqdnnetworkpolicies.networking.gke.io/owned-by"
 	deletePolicyAnnotation = "fqdnnetworkpolicies.networking.gke.io/delete-policy"
-	AaaaLookupsAnnotation  = "fqdnnetworkpolicies.networking.gke.io/aaaa-lookups"
+	aaaaLookupsAnnotation  = "fqdnnetworkpolicies.networking.gke.io/aaaa-lookups"
 	finalizerName          = "finalizer.fqdnnetworkpolicies.networking.gke.io"
 	// TODO make retry configurable
 	retry = time.Second * time.Duration(10)
@@ -467,7 +467,7 @@ func (r *FQDNNetworkPolicyReconciler) getNetworkPolicyEgressRules(ctx context.Co
 					}
 				}
 				// check for AAAA lookups skip annotation
-				if fqdnNetworkPolicy.Annotations[AaaaLookupsAnnotation] == "skip" {
+				if fqdnNetworkPolicy.Annotations[aaaaLookupsAnnotation] == "skip" {
 					log.Info("FQDNNetworkPolicy has AAAA lookups policy set to skip, not resolving AAAA records")
 				} else {
 					// AAAA records
