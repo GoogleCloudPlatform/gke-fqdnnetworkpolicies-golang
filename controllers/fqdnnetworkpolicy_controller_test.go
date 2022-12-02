@@ -350,6 +350,84 @@ var _ = Describe("FQDNNetworkPolicy controller", func() {
 				Expect(k8sClient.Delete(ctx, &networkPolicy)).Should(Succeed())
 			})
 		})
+		Context("when the NetworkPolicy has the aaaa-lookups annotation set to skip", func() {
+			ctx := context.Background()
+			fqdnNetworkPolicy := getFQDNNetworkPolicy("context5", "default")
+			fqdnNetworkPolicy.GetValidAaaaLookupsSkippedResource()
+
+			nn := types.NamespacedName{
+				Namespace: fqdnNetworkPolicy.Namespace,
+				Name:      fqdnNetworkPolicy.Name,
+			}
+			It("Shouldn't lookup AAAA records", func() {
+				Expect(k8sClient.Create(ctx, &fqdnNetworkPolicy)).Should(Succeed())
+				Eventually(func() error {
+					networkPolicy := networking.NetworkPolicy{}
+					return k8sClient.Get(ctx, nn, &networkPolicy)
+				}).Should(Succeed())
+
+				// check only ipv4 adresses are present
+				Eventually(func() error {
+					r := net.Resolver{}
+					// computing the expected IPs in the NetworkPolicy
+					// from the FQDNs in the FQDNNetworkPolicy
+					// We use a different lib for resolving than the one in the main code
+					expectedIPs := []string{}
+					for _, fer := range fqdnNetworkPolicy.Spec.Egress {
+						for _, to := range fer.To {
+							for _, fqdn := range to.FQDNs {
+								ip4s, err := r.LookupIP(ctx, "ip4", fqdn)
+								if err != nil {
+									continuing := false
+									derr, ok := err.(*net.DNSError)
+									if ok && derr.IsNotFound {
+										continuing = true
+									}
+									aerr, ok := err.(*net.AddrError)
+									if ok && aerr.Err == "no suitable address found" {
+										continuing = true
+									}
+									if !continuing {
+										return err
+									}
+								}
+								for _, ip := range ip4s {
+									expectedIPs = append(expectedIPs, ip.String()+"/32")
+								}
+							}
+						}
+					}
+					// Getting the NetworkPolicy
+					networkPolicy := networking.NetworkPolicy{}
+					err := k8sClient.Get(ctx, nn, &networkPolicy)
+					if err != nil {
+						return err
+					}
+					if len(networkPolicy.Spec.PolicyTypes) != 1 ||
+						networkPolicy.Spec.PolicyTypes[0] != networking.PolicyTypeEgress {
+						return errors.New("Unexpected PolicyType: " + fmt.Sprintf("%v", networkPolicy.Spec.PolicyTypes) +
+							". Expected PolicyType: [Egress]")
+					}
+					total := 0
+					for _, egressRule := range networkPolicy.Spec.Egress {
+						// checking that every CIDR in the NetworkPolicy
+						// is in the expect list of IPs
+						total += len(egressRule.To)
+						for _, to := range egressRule.To {
+							// removing the /32 at the end of the CIDR
+							if !containsString(expectedIPs, string(to.IPBlock.CIDR)) {
+								return errors.New("Unexpected IP in NetworkPolicy: " + string(to.IPBlock.CIDR) +
+									". Expected IPs: " + fmt.Sprint(expectedIPs))
+							}
+						}
+					}
+					if total != len(expectedIPs) {
+						return errors.New("Some expected IPs are not present in the NetworkPolicy")
+					}
+					return nil
+				}).Should(Succeed())
+			})
+		})
 	})
 })
 

@@ -56,6 +56,8 @@ By default, the NetworkPolicy associated with a FQDNNetworkPolicy gets deleted w
 To prevent this behavior, set the `fqdnnetworkpolicies.networking.gke.io/delete-policy` annotation to `abandon` on the
 NetworkPolicy.
 
+You can disable AAAA lookups for an FQDNNetworkPolicy by setting the `fqdnnetworkpolicies.networking.gke.io/aaaa-lookups` annotation to `skip`. The resulting NetworkPolicy will not contain any IPv6 addresses.
+
 ## Limitations
 
 There are a few functional limitations to FQDNNetworkPolicies:
