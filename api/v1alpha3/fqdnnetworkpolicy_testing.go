@@ -65,6 +65,10 @@ func (r *FQDNNetworkPolicy) GetValidNonExistentFQDNResource() *FQDNNetworkPolicy
 	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_nonexistentfqdn.yaml")
 }
 
+func (r *FQDNNetworkPolicy) GetValidAaaaLookupsSkippedResource() *FQDNNetworkPolicy {
+	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_valid_aaaalookupsskipped.yaml")
+}
+
 func (r *FQDNNetworkPolicy) GetInvalidResource() *FQDNNetworkPolicy {
 	return r.LoadResource("./config/samples/networking_v1alpha3_fqdnnetworkpolicy_invalid.yaml")
 }
