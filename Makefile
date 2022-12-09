@@ -150,3 +150,9 @@ deploy-cert-manager: ## Deploy cert-manager into the cluster.
 .PHONY: force-deploy-manager
 force-deploy-manager: docker-build kind-load-image deploy
 	kubectl -n fqdnnetworkpolicies-system delete pod -l control-plane=controller-manager
+
+latest:
+	test ! -z ${VERSION}
+	echo ${VERSION} > fqdnnetworkpolicies-latest
+	gsutil -h "Cache-Control: no-cache" cp fqdnnetworkpolicies-latest gs://fqdnnetworkpolicies-manifests/latest
+	rm fqdnnetworkpolicies-latest
