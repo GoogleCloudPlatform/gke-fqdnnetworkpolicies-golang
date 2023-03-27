@@ -121,7 +121,7 @@ Follow these instructions to install the FQDNNetworkPolicies controller in your 
 1. Install [cert-manager](https://cert-manager.io/docs/installation/kubernetes/).
 
    ```
-   kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+   kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.11.0/cert-manager.yaml
    ```
 
 1. Install the FQDNNetworkPolicy controller.
