@@ -26,6 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -84,7 +85,7 @@ func (r *FQDNNetworkPolicy) Default() {
 var _ webhook.Validator = &FQDNNetworkPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *FQDNNetworkPolicy) ValidateCreate() error {
+func (r *FQDNNetworkPolicy) ValidateCreate() (admission.Warnings, error) {
 	fqdnnetworkpolicylog.Info("validate create", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object creation.
@@ -93,15 +94,15 @@ func (r *FQDNNetworkPolicy) ValidateCreate() error {
 	allErrs = append(allErrs, r.ValidateFQDNs()...)
 
 	if len(allErrs) == 0 {
-		return nil
+		return nil, nil
 	}
-	return apierrors.NewInvalid(
+	return nil, apierrors.NewInvalid(
 		schema.GroupKind{Group: "networking.gke.io", Kind: "FQDNNetworkPolicy"},
 		r.Name, allErrs)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *FQDNNetworkPolicy) ValidateUpdate(old runtime.Object) error {
+func (r *FQDNNetworkPolicy) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	fqdnnetworkpolicylog.Info("validate update", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object update.
@@ -110,19 +111,19 @@ func (r *FQDNNetworkPolicy) ValidateUpdate(old runtime.Object) error {
 	allErrs = append(allErrs, r.ValidateFQDNs()...)
 
 	if len(allErrs) == 0 {
-		return nil
+		return nil, nil
 	}
-	return apierrors.NewInvalid(
+	return nil, apierrors.NewInvalid(
 		schema.GroupKind{Group: "networking.gke.io", Kind: "FQDNNetworkPolicy"},
 		r.Name, allErrs)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *FQDNNetworkPolicy) ValidateDelete() error {
+func (r *FQDNNetworkPolicy) ValidateDelete() (admission.Warnings, error) {
 	fqdnnetworkpolicylog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 // ValidatePorts checks that the FQDNNetworkPolicy only contains valid ports (from 1 to 65535)
