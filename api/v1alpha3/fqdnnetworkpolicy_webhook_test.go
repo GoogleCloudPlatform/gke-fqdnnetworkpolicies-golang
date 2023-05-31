@@ -22,23 +22,23 @@ import (
 
 func TestValidateCreate(t *testing.T) {
 	r := FQDNNetworkPolicy{}
-	if r.GetValidResource().ValidateCreate() != nil {
+	if _, err := r.GetValidResource().ValidateCreate(); err != nil {
 		t.Error("Valid resource marked as invalid during creation")
 	}
 
-	if r.GetValidIngressResource().ValidateCreate() != nil {
+	if _, err := r.GetValidIngressResource().ValidateCreate(); err != nil {
 		t.Error("Valid resource with Ingress policy marked as invalid during creation")
 	}
 
-	if r.GetValidNoPortResource().ValidateCreate() != nil {
+	if _, err := r.GetValidNoPortResource().ValidateCreate(); err != nil {
 		t.Error("Valid resource with no port marked as invalid during creation")
 	}
 
-	if r.GetValidNoProtocolResource().ValidateCreate() != nil {
+	if _, err := r.GetValidNoProtocolResource().ValidateCreate(); err != nil {
 		t.Error("Valid resource with no protocol marked as invalid during creation")
 	}
 
-	if r.GetInvalidResource().ValidateCreate() == nil {
+	if _, err := r.GetInvalidResource().ValidateCreate(); err == nil {
 		t.Error("Invalid resource marked as valid during creation")
 	}
 }
@@ -49,24 +49,24 @@ func TestValidateUpdate(t *testing.T) {
 	r.GetValidResource()
 	ro.GetInvalidResource()
 
-	if r.GetValidResource().ValidateUpdate(&ro) != nil {
+	if _, err := r.GetValidResource().ValidateUpdate(&ro); err != nil {
 		t.Error("Valid resource marked as invalid during update")
 	}
 
-	if r.GetValidIngressResource().ValidateUpdate(&ro) != nil {
+	if _, err := r.GetValidIngressResource().ValidateUpdate(&ro); err != nil {
 		t.Error("Valid resource with Ingress policy marked as invalid during update")
 	}
 
-	if r.GetValidNoPortResource().ValidateUpdate(&ro) != nil {
+	if _, err := r.GetValidNoPortResource().ValidateUpdate(&ro); err != nil {
 		t.Error("Valid resource with no port marked as invalid during update")
 	}
 
-	if r.GetValidNoProtocolResource().ValidateUpdate(&ro) != nil {
+	if _, err := r.GetValidNoProtocolResource().ValidateUpdate(&ro); err != nil {
 		t.Error("Valid resource with no protocol marked as invalid during update")
 	}
 
 	ro.GetValidResource()
-	if r.GetInvalidResource().ValidateUpdate(&ro) == nil {
+	if _, err := r.GetInvalidResource().ValidateUpdate(&ro); err == nil {
 		t.Error("Invalid resource marked as valid during update")
 	}
 }
@@ -74,24 +74,24 @@ func TestValidateUpdate(t *testing.T) {
 func TestValidateDelete(t *testing.T) {
 	r := FQDNNetworkPolicy{}
 
-	if r.GetValidResource().ValidateDelete() != nil {
+	if _, err := r.GetValidResource().ValidateDelete(); err != nil {
 		t.Error("Valid resource marked as invalid during deletion")
 	}
 
-	if r.GetValidIngressResource().ValidateDelete() != nil {
+	if _, err := r.GetValidIngressResource().ValidateDelete(); err != nil {
 		t.Error("Valid resource with Ingress policy marked as invalid during deletion")
 	}
 
-	if r.GetValidNoPortResource().ValidateDelete() != nil {
+	if _, err := r.GetValidNoPortResource().ValidateDelete(); err != nil {
 		t.Error("Valid resource with no port marked as invalid during deletion")
 	}
 
-	if r.GetValidNoProtocolResource().ValidateDelete() != nil {
+	if _, err := r.GetValidNoProtocolResource().ValidateDelete(); err != nil {
 		t.Error("Valid resource with no protocol marked as invalid during deletion")
 	}
 
 	r.GetInvalidResource()
-	if r.ValidateDelete() != nil {
+	if _, err := r.ValidateDelete(); err != nil {
 		t.Error("Impossible to delete invalid resource")
 	}
 }
