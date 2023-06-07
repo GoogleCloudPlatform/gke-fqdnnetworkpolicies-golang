@@ -1,3 +1,11 @@
+# 🚨 Warning 🚨
+
+There is a new official preview feature for FQDN Network Policies built into Google
+Kubernetes Engine: [Control Pod egress traffic using FQDN network policies](https://cloud.google.com/kubernetes-engine/docs/how-to/fqdn-network-policies).
+While it has the same apiVersion and kind as the API of this project, it is **NOT** the same thing as this project (which is not an official Google product). We don't guarantee any compatibility between this project and the official GKE feature.
+
+We strongly encourage you to migrate to the new official feature. We will archive this project in the future, and will not be developing any new feature here.
+
 # FQDNNetworkPolicies
 
 FQDNNetworkPolicies let you create Kubernetes Network Policies based on Fully
